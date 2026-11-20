@@ -4,6 +4,7 @@ import { coachBox, say, sfx } from './coach.js';
 import { analyse, cancel, winPct } from './engine.js';
 import { Chess } from '../vendor/chess.js';
 import * as store from './store.js';
+import { setPage, sanLine } from './ai-coach.js';
 
 export const THEMES = {
   mix: { label: 'Mixed', tip: 'Look at every check, capture and threat.' },
@@ -103,6 +104,11 @@ export function puzzleView(view, params) {
     const lm = p.lastMove ? [p.lastMove.slice(0, 2), p.lastMove.slice(2, 4)] : undefined;
     board.load(p.fen, { orientation: side === 'w' ? 'white' : 'black', lastMove: lm, interactive: true });
     const who = side === 'w' ? 'White' : 'Black';
+    setPage({
+      chips: ['Give me a hint', 'What is the idea here?', 'Why was my move wrong?'],
+      info: () => `Puzzle page. ${p.mistake ? `This position is from the player's own game, where they played ${p.played}.` : `Lichess puzzle${p.rating ? ` rated ${p.rating}` : ''}, themes: ${(p.themes ?? []).join(', ')}.`} ${who} (the player) to move. FEN: ${p.fen}
+Solution: ${sanLine(p.fen, p.solution, 12)}. Do NOT reveal the solution moves unless the player clearly asks for the answer; give hints about the idea (which piece, which target, what pattern) instead. Current board after the player's attempts (FEN): ${board.chess.fen()}`,
+    });
     if (p.mistake) say(`From your game: you played ${p.played} here. ${who} to move. Find the better move!`);
     else say(`${who} to move. Find the best move!${p.rating ? ` This one is rated ${p.rating}.` : ''}`);
   }

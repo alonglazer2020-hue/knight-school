@@ -6,6 +6,7 @@ import { reviewIndex, reviewGame } from './review.js';
 import { coachHome } from './home.js';
 import { startAutoSync } from './sync.js';
 import { initSyncPanel } from './sync-ui.js';
+import { initChat, setPage } from './ai-coach.js';
 
 const view = document.getElementById('view');
 
@@ -13,6 +14,7 @@ function route() {
   cancel();
   hush();
   window.onkeydown = null;
+  setPage(null); // each page tells the AI coach what's on screen
   const [path, query = ''] = location.hash.slice(2).split('?');
   const [tab = 'coach', arg] = path.split('/');
   const params = new URLSearchParams(query);
@@ -24,6 +26,7 @@ function route() {
   else if (tab === 'review') arg ? reviewGame(view, decodeURIComponent(arg)) : reviewIndex(view);
   else coachHome(view);
 }
+initChat(document.getElementById('tChat'), document.getElementById('chatPanel'));
 window.addEventListener('hashchange', route);
 route();
 

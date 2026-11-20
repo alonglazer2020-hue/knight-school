@@ -5,6 +5,7 @@ import { analyse, winPct } from './engine.js';
 import { parseGame, buildReview, terminalEval, CLASSES, BAD } from './analysis.js';
 import { Chess } from '../vendor/chess.js';
 import * as store from './store.js';
+import { setPage, openChat, sanLine } from './ai-coach.js';
 
 const DEPTH = 14;
 const MAX_SAVED = 30;
@@ -206,7 +207,7 @@ function renderReview(view, R, fresh = false) {
         <div><i class="dot b"></i>${esc(R.black)} ${R.br ? `(${R.br})` : ''}<b>${Math.round(R.accuracy.b)}%</b></div>
       </div>
       <div class="coachslot"></div>
-      <div class="btns"><button class="b-retry">Retry move</button><button class="b-best">Show best</button><button class="b-key primary">Key moments ▶</button></div>
+      <div class="btns"><button class="b-retry">Retry move</button><button class="b-best">Show best</button><button class="b-key primary">Key moments ▶</button><button class="b-ask">💬 Ask coach</button></div>
       <svg class="graph" viewBox="0 0 ${Math.max(N, 1)} 100" preserveAspectRatio="none"></svg>
       <table class="tally"><tr><th></th><th>${esc(R.white)}</th><th>${esc(R.black)}</th></tr>
         ${Object.entries(CLASSES).map(([k, c]) => `<tr><td><i class="sym" style="background:${c.color}">${c.sym}</i>${c.label}</td><td>${R.counts.w[k] ?? 0}</td><td>${R.counts.b[k] ?? 0}</td></tr>`).join('')}
@@ -302,6 +303,35 @@ function renderReview(view, R, fresh = false) {
     else if (e.key === 'Home') nav.first(); else if (e.key === 'End') nav.last(); else return;
     e.preventDefault();
   };
+  // What the AI coach sees: the whole graded game, plus fresh Stockfish lines for the move on screen.
+  const pov = e => {
+    const s = R.myColor === 'w' ? 1 : -1;
+    if (e.mate != null) return e.mate === 0 ? 'checkmate' : `mate in ${Math.abs(e.mate)} ${e.mate * s > 0 ? 'for' : 'against'} the player`;
+    return `${e.cp * s > 0 ? '+' : ''}${((e.cp * s) / 100).toFixed(1)}`;
+  };
+  $('.b-ask').onclick = () => openChat(idx >= 0 ? 'Explain this move' : 'What did you think of this game?');
+  setPage({
+    chips: ['Explain this move', 'What did you think of this game?', 'What should I learn from this game?'],
+    async info() {
+      const me = R.myColor, opp = me === 'w' ? 'b' : 'w';
+      const graded = R.plies.map((p, i) => `${i % 2 ? '' : Math.floor(i / 2) + 1 + '. '}${p.san}(${p.cls})`).join(' ');
+      let s = `Game Review page. ${R.white} (${R.wr ?? '?'}) vs ${R.black} (${R.br ?? '?'}), result ${R.result}. The player was ${me === 'w' ? 'White' : 'Black'}. Accuracy: player ${Math.round(R.accuracy[me])}%, opponent ${Math.round(R.accuracy[opp])}%.${R.opening ? ` Opening: ${R.opening.slice(4)}.` : ''}
+Whole game with Stockfish grades: ${graded}
+`;
+      if (idx < 0) return s + 'They are looking at the game overview (before move 1).';
+      const p = R.plies[idx];
+      const [before, after] = await Promise.all([analyse(R.fens[idx], { depth: 12, multipv: 3 }), analyse(R.fens[idx + 1], { depth: 12 })]);
+      const bestLine = before?.lines.find(l => l.pv[0] === p.best); // only a line that starts with the review's best move
+      s += `They are looking at move ${Math.floor(idx / 2) + 1}${idx % 2 ? '...' : '.'} ${p.san}, played by ${p.color === me ? 'the player' : 'the opponent'}, graded "${p.cls}". Review note: "${p.note}"
+Evaluation before the move: ${pov(R.evals[idx])}; after it: ${pov(R.evals[idx + 1])}.
+`;
+      if (p.bestSan && p.uci !== p.best) s += `Stockfish's best move there was ${p.bestSan}${bestLine ? `; best line: ${sanLine(R.fens[idx], bestLine.pv)}` : ''}.
+`;
+      if (after?.lines[0]?.pv) s += `Stockfish's best continuation after ${p.san}: ${sanLine(R.fens[idx + 1], after.lines[0].pv)}.
+`;
+      return s + `Position after the move (FEN): ${R.fens[idx + 1]}`;
+    },
+  });
   if (flipped) board.flip();
   go(-1);
   if (fresh) sfx.win();

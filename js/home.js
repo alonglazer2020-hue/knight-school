@@ -5,6 +5,7 @@ import { ALL_LESSONS } from './lessons-data.js';
 import { THEMES, mistakes } from './puzzles.js';
 import { reviewLatest } from './review.js';
 import * as store from './store.js';
+import { openChat } from './ai-coach.js';
 
 const WEAK = {
   'hung': { label: 'Hanging pieces', theme: 'hangingPiece', lesson: 'values', advice: 'Before every move, do a blunder check: which of my pieces are attacked, and are they defended?' },
@@ -42,7 +43,7 @@ export function coachHome(view) {
   const lessonTitle = id => ALL_LESSONS.find(l => l.id === id)?.title;
 
   view.innerHTML = `<div class="page home">
-    <div class="hero"><div class="coachslot"></div></div>
+    <div class="hero"><div class="coachslot"></div><button class="primary b-talk">💬 Talk to your coach</button></div>
     <div class="stats">
       <div><b>${Math.round(store.get('prating', 800))}</b><span>Puzzle rating</span></div>
       <div><b>${pst.solved}</b><span>Puzzles solved</span></div>
@@ -61,6 +62,7 @@ export function coachHome(view) {
       <div class="row"><a class="btn" href="#/learn/${w.lesson}">Lesson: ${lessonTitle(w.lesson) ?? 'Openings'}</a><a class="btn primary" href="#/puzzles?theme=${w.theme}">Train ${THEMES[w.theme]?.label ?? w.theme}</a></div></div>`).join('')}</div>` : ''}
   </div>`;
   view.querySelector('.coachslot').append(coachBox());
+  view.querySelector('.b-talk').onclick = () => openChat();
 
   view.querySelector('.b-latest').onclick = async () => {
     if (!user) { location.hash = '#/review'; return; }

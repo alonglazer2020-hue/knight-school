@@ -25,6 +25,8 @@ export function coachBox() {
 
 const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+export const lastSaid = () => lastText;
+
 export function say(text, mood = '') {
   lastText = text;
   if (!box) return;

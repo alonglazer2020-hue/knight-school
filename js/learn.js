@@ -1,4 +1,5 @@
 import { Chess } from '../vendor/chess.js';
+import { setPage } from './ai-coach.js';
 import { Board, arrow, circle, uciOf } from './board.js';
 import { coachBox, say, sfx } from './coach.js';
 import { COURSES, ALL_LESSONS } from './lessons-data.js';
@@ -52,6 +53,10 @@ export function lessonView(view, id) {
     $('.b-next').textContent = i === lesson.steps.length - 1 ? 'Finish' : 'Next';
     $('.b-back').disabled = i === 0;
     $('.b-hint').hidden = !(s.answer || s.line);
+    setPage({
+      chips: ['Explain this simpler', 'Why does this matter in real games?', 'Give me a hint'],
+      info: () => `Lesson "${lesson.title}", step ${i + 1} of ${lesson.steps.length}. The lesson says: "${s.say}" Board (FEN): ${board.chess.fen()}${s.answer ? `. The task's answer is ${[].concat(s.answer).join(' or ')}: hint toward it, don't just give it away unless asked.` : ''}`,
+    });
     say(s.say);
     if (s.line) autoReply();
   }

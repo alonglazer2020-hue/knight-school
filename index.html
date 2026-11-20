@@ -20,6 +20,7 @@
       <a href="#/review" data-tab="review">Review</a>
     </nav>
     <div class="toggles">
+      <button id="tChat" class="chatbtn" title="Talk to your coach" aria-haspopup="dialog">💬<span> Ask coach</span></button>
       <button id="tSound" title="Sound effects">🔊</button>
       <button id="tVoice" title="Coach voice settings" aria-haspopup="true">🗣️</button>
       <button id="tSync" title="Sync progress between devices" aria-haspopup="true">☁️</button>
@@ -36,6 +37,7 @@
     </div>
   </header>
   <main id="view"></main>
+  <section id="chatPanel" class="chat" role="dialog" aria-label="Chat with Coach Knox" hidden></section>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
