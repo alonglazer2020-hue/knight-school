@@ -161,7 +161,7 @@ summary { cursor: pointer; color: var(--muted); }
 .toggles button.warn { outline: 2px solid #ffa459; border-radius: 8px; }
 
 /* AI coach chat */
-.toggles .chatbtn { font-size: .95rem; font-weight: 700; background: var(--accent); color: #fff; border-radius: 8px; padding: .35em .8em; }
+.toggles .chatbtn { font-size: .95rem; font-weight: 700; background: var(--accent); color: #142208; border-radius: 8px; padding: .35em .8em; }
 .hero .b-talk { align-self: flex-start; margin-top: .8rem; }
 .chat { position: fixed; right: 1rem; bottom: 1rem; z-index: 30; width: min(400px, calc(100vw - 2rem)); height: min(640px, calc(100vh - 6rem)); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 14px 40px #000c; display: flex; flex-direction: column; overflow: hidden; }
 .chat-head { display: flex; align-items: center; gap: .5rem; padding: .6rem .8rem; background: var(--panel2); }
@@ -172,12 +172,12 @@ summary { cursor: pointer; color: var(--muted); }
 .msg { max-width: 88%; padding: .6rem .8rem; border-radius: 12px; line-height: 1.45; overflow-wrap: anywhere; }
 .msg.ai { background: #fff; color: #222; align-self: flex-start; border-bottom-left-radius: 4px; }
 .msg.ai a:not(.btn) { color: #2e6b0d; }
-.msg.me { background: var(--accent-d); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
-.msg.thinking { color: #777; font-style: italic; }
+.msg.me { background: #3f6b1f; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+.msg.thinking { color: #595959; font-style: italic; }
 .msg.err { background: #4a2a26; color: #ffd4cc; }
 .msg ol { margin: .4rem 0; padding-left: 1.2rem; }
 .msg-links { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
-.msg-links .btn { font-size: .85rem; padding: .35em .7em; background: var(--accent); color: #fff; }
+.msg-links .btn { font-size: .85rem; padding: .35em .7em; background: var(--accent); color: #142208; font-weight: 700; }
 .keyform { display: flex; gap: .4rem; margin: .5rem 0 .3rem; }
 .keyform input { flex: 1; min-width: 0; background: #f2f2f2; color: #222; border-color: #ccc; }
 .keymsg { display: block; color: #666; } .keymsg.err { color: #b3261e; }
