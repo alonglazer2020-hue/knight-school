@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Knight School</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♞</text></svg>">
+  <link rel="stylesheet" href="vendor/chessground.base.css">
+  <link rel="stylesheet" href="vendor/chessground.brown.css">
+  <link rel="stylesheet" href="vendor/chessground.cburnett.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <a class="logo" href="#/coach"><span>♞</span> Knight School</a>
+    <nav>
+      <a href="#/coach" data-tab="coach">Coach</a>
+      <a href="#/learn" data-tab="learn">Learn</a>
+      <a href="#/puzzles" data-tab="puzzles">Puzzles</a>
+      <a href="#/review" data-tab="review">Review</a>
+    </nav>
+    <div class="toggles">
+      <button id="tSound" title="Sound effects">🔊</button>
+      <button id="tVoice" title="Coach voice">🗣️</button>
+    </div>
+  </header>
+  <main id="view"></main>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
