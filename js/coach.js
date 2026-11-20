@@ -1,9 +1,14 @@
 // Coach Knox: the speech bubble, the voice (Web Speech API) and synthesized sound effects (Web Audio).
 import * as store from './store.js';
+import { AI_VOICES, ensureVoice, synth } from './voice-ai.js';
 
 let box = null;
 let lastText = '';
-export const settings = { sound: store.get('sound', true), voice: store.get('voice', true) };
+export const settings = {
+  sound: store.get('sound', true), voice: store.get('voice', true),
+  voiceName: /^(ai|br):/.test(store.get('voiceName', '')) ? store.get('voiceName') : 'ai:' + AI_VOICES[0][0],
+  rate: store.get('rate', 1),
+};
 
 const SAN_RE = /\b(?:O-O-O|O-O)[+#]?|\b[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?[+#]?/g;
 const PIECE = { K: 'king', Q: 'queen', R: 'rook', B: 'bishop', N: 'knight' };
@@ -12,7 +17,7 @@ export function coachBox() {
   const el = document.createElement('div');
   el.className = 'coach';
   el.innerHTML = `<div class="avatar" title="Coach Knox">♞</div>
-    <div class="bubble"><span class="text"></span><button class="replay" title="Say it again">🔁</button></div>`;
+    <div class="bubble"><span class="text"></span><small class="vstatus"></small><button class="replay" title="Say it again">🔁</button></div>`;
   el.querySelector('.replay').onclick = () => speak(lastText);
   box = el;
   return el;
@@ -47,26 +52,91 @@ export function spoken(text) {
   }).replace(/!!/g, '').replace(/\?\?/g, '');
 }
 
-let voice = null;
-function pickVoice() {
-  const vs = speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
-  return vs.find(v => /natural|neural/i.test(v.name) && /en-US/.test(v.lang))
-    || vs.find(v => /natural|neural|online/i.test(v.name))
-    || vs.find(v => /Google US English/.test(v.name))
-    || vs.find(v => v.lang === 'en-US') || vs[0] || null;
+// English voices on this device, best-sounding ("Natural"/neural) first.
+const quality = v => (/natural|neural/i.test(v.name) ? 0 : /online|google|enhanced|premium/i.test(v.name) ? 1 : 2);
+export function voices() {
+  if (!('speechSynthesis' in window)) return [];
+  return speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'))
+    .sort((a, b) => quality(a) - quality(b) || (b.lang === 'en-US') - (a.lang === 'en-US') || a.name.localeCompare(b.name));
 }
-if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => { voice = pickVoice(); };
+function currentVoice() {
+  const vs = voices();
+  return vs.find(v => 'br:' + v.name === settings.voiceName) || vs[0] || null;
+}
+
+// settings.voiceName is "ai:<piper id>" or "br:<browser voice name>"
+export { AI_VOICES };
+let token = 0;
+const audio = new Audio();
+audio.preservesPitch = true;
+// iOS only lets audio play after a tap; unlock our single <audio> element on the first one.
+addEventListener('pointerdown', () => {
+  audio.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+  audio.play().catch(() => {});
+}, { once: true });
+
+function voiceStatus(msg) { document.querySelectorAll('.vstatus').forEach(e => { e.textContent = msg; }); }
 
 export function speak(text) {
-  if (!settings.voice || !('speechSynthesis' in window) || !text) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(spoken(text));
-  voice ??= pickVoice();
-  if (voice) u.voice = voice;
-  u.rate = 1.05;
+  if (!settings.voice || !text) return;
+  hush();
+  const my = ++token;
+  if (settings.voiceName.startsWith('ai:')) speakAI(spoken(text), settings.voiceName.slice(3), my);
+  else speakBrowser(spoken(text));
+}
+
+function speakBrowser(text) {
+  if (!('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  const v = currentVoice();
+  if (v) { u.voice = v; u.lang = v.lang; }
+  u.rate = settings.rate;
   speechSynthesis.speak(u);
 }
-export function hush() { if ('speechSynthesis' in window) speechSynthesis.cancel(); }
+
+async function speakAI(text, id, my) {
+  try {
+    await ensureVoice(id, p => voiceStatus(`Downloading the coach's voice… ${Math.round(p * 100)}% (one time only)`));
+    voiceStatus('');
+    // Speak sentence by sentence, generating the next one while the current one plays.
+    const parts = text.match(/[^.!?]+[.!?]*/g)?.map(s => s.trim()).filter(Boolean) ?? [text];
+    let next = synth(parts[0], id);
+    for (let i = 0; i < parts.length; i++) {
+      const blob = await next;
+      if (my !== token) return;
+      if (i + 1 < parts.length) next = synth(parts[i + 1], id);
+      await play(blob, my);
+      if (my !== token) return;
+    }
+  } catch (e) {
+    console.warn('AI voice failed, using the browser voice', e);
+    voiceStatus("Couldn't load the AI voice (check your internet). Using the browser voice for now.");
+    if (my === token) speakBrowser(text);
+  }
+}
+
+function play(blob, my) {
+  return new Promise(resolve => {
+    if (my !== token) return resolve();
+    const url = URL.createObjectURL(blob);
+    audio.src = url;
+    audio.playbackRate = settings.rate;
+    const done = () => { URL.revokeObjectURL(url); audio.onended = audio.onpause = null; resolve(); };
+    audio.onended = done;
+    audio.onpause = done;
+    audio.play().catch(done);
+  });
+}
+
+export function setVoice(name, rate) {
+  settings.voiceName = name; settings.rate = rate;
+  store.set('voiceName', name); store.set('rate', rate);
+}
+export function hush() {
+  token++;
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  if (!audio.paused) audio.pause();
+}
 
 // ---- Sound effects, synthesized so there are no audio files to license ----
 let ac = null;
