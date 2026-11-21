@@ -37,13 +37,13 @@ Until Parts 1 and 2 are done the site still works: people can connect a chess.co
 1. Open https://console.cloud.google.com/apis/credentials and pick the project **knight-school-6bddd**.
 2. Click the key named **Browser key (auto created by Firebase)**.
 3. Under **Application restrictions** choose **Websites** and add:
-   `https://alonglazer2020-hue.github.io/*`, `http://localhost:8765/*` and (once the new address works) `https://knightschool.js.org/*`.
+   `https://alonglazer2020-hue.github.io/*`, `http://localhost:8765/*` and later your new address (for example `https://knight-school.pages.dev/*`).
 4. Click **Save**. (Takes up to 5 minutes to apply.)
 
 ## Part 6 (optional): show up on Google faster
 
 1. Open https://search.google.com/search-console and click **Add property** > **URL prefix**.
-2. Type `https://alonglazer2020-hue.github.io/knight-school/` (later also `https://knightschool.js.org/`).
+2. Type `https://alonglazer2020-hue.github.io/knight-school/` (later also your new address).
 3. Choose the **HTML tag** method, copy the `content="..."` value, and send it to Claude to add to the site. Then press **Verify**.
 4. In **Sitemaps**, submit `sitemap.xml`.
 
