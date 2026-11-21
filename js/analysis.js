@@ -50,6 +50,46 @@ function playLine(fen, pv, n) {
   return { fen: c.fen(), sans };
 }
 const evenPlies = pv => { const n = Math.min(6, pv.length); return n - (n % 2); };
+const amount = v => (v >= 8 ? 'the queen' : v >= 5 ? 'a rook' : v >= 3 ? 'a piece' : v >= 2 ? 'two pawns' : 'a pawn');
+const cap = s => s[0].toUpperCase() + s.slice(1);
+
+// Play an engine line and sum it up for `color`: net material won (+) or lost (-), cut at the first even
+// ply that already shows the final result (so trades finish but the line stays short), or at checkmate.
+function outcome(fen, pv, color, n = 8) {
+  const c = new Chess(fen), sans = [], sg = color === 'w' ? 1 : -1, start = material(fen), nets = [];
+  for (const u of pv.slice(0, n)) {
+    try { sans.push(c.move(toMoveArg(u)).san); } catch { break; }
+    if (c.isCheckmate()) return { sans, net: 0, mate: true };
+    nets.push(sg * (material(c.fen()) - start));
+  }
+  const last = nets.length - (nets.length % 2 || 0) - 1; // last even-length prefix
+  if (last < 0) return { sans, net: 0, mate: false };
+  const net = nets[last];
+  let k = 1;
+  while (k < last && Math.abs(nets[k] - net) > 1) k += 2; // within a pawn of the end result is the point
+  return { sans: sans.slice(0, k + 1), net, mate: false };
+}
+const sanOf = (fen, uci) => { try { return new Chess(fen).move(toMoveArg(uci)).san; } catch { return null; } };
+
+// The plainest reason a move is useful ("it takes the bishop"), or '' when nothing simple stands out.
+export function idea(fen, uci, ply = 99) {
+  const c = new Chess(fen);
+  let m;
+  try { m = c.move(toMoveArg(uci)); } catch { return ''; }
+  if (c.isCheckmate()) return "it's checkmate";
+  const hit = attackedBy(c, m.to);
+  if (hit.length >= 2 && m.piece !== 'k') return `it attacks the ${hit.map(x => NAME[x.type]).join(' and the ')} at once`;
+  if (m.captured && VAL[m.captured] >= 3) return `it takes the ${NAME[m.captured]}`;
+  if (m.promotion) return `it makes a new ${NAME[m.promotion]}`;
+  if (/[kq]/.test(m.flags)) return 'it castles the king to safety';
+  if (c.inCheck()) return 'it gives check';
+  const loose = hit.filter(x => x.type !== 'k' && (VAL[x.type] > VAL[m.piece] || !c.attackers(x.square, x.color).length));
+  if (loose.length) return `it attacks the ${NAME[loose[0].type]} on ${loose[0].square}`;
+  if (m.captured) return `it takes the pawn on ${m.to}`;
+  if ('nb'.includes(m.piece) && ply < 24 && /[18]/.test(m.from[1])) return `it develops the ${NAME[m.piece]}`;
+  if (m.piece === 'p' && ply < 20 && ['c4', 'd4', 'e4', 'c5', 'd5', 'e5'].includes(m.to)) return 'it takes space in the center';
+  return '';
+}
 
 // Enemy pieces worth 3+ (or the king) attacked by the piece standing on `sq`.
 function attackedBy(chess, sq) {
@@ -86,7 +126,7 @@ function evalPhrase(line) {
 }
 
 // Why was this move bad? Returns { tag, text } — tags feed the coach's weakness tracker.
-function reason(m, fenBefore, E0, E1, bestSan, P) {
+function reason(m, fenBefore, E0, E1, bestSan, P, before, after, ply) {
   const sg = m.color === 'w' ? 1 : -1;
   const t0 = E0.lines[0], t1 = E1.lines[0];
   if (t0?.mate != null && Math.sign(t0.mate) === sg && !(t1?.mate != null && Math.sign(t1.mate) === sg))
@@ -106,8 +146,9 @@ function reason(m, fenBefore, E0, E1, bestSan, P) {
       const hit = attackedBy(c, reply.to);
       if (hit.length >= 2 && reply.piece !== 'k')
         return { tag: 'allowed-fork', text: `This allows ${reply.san}, a fork that hits ${P.your} ${hit.map(x => NAME[x.type]).join(' and ')}.` };
-      return { tag: 'allowed-tactic', text: `This allows ${reply.san}, which wins material.` };
     }
+    const o = outcome(m.after, t1.pv, m.color);
+    if (o.net <= -2) return { tag: 'allowed-tactic', text: `After ${o.sans.join(' ')}, ${P.you} lose ${amount(-o.net)}.` };
   }
   if (t0?.pv?.length) {
     const l = playLine(fenBefore, t0.pv, evenPlies(t0.pv));
@@ -118,10 +159,14 @@ function reason(m, fenBefore, E0, E1, bestSan, P) {
       const hit = attackedBy(c, bm.to);
       if (hit.length >= 2 && bm.piece !== 'k') return { tag: 'missed-fork', text: `${P.You} missed ${bestSan}, a fork that wins material!` };
       if (bm.captured && VAL[bm.captured] >= 3) return { tag: 'missed-win', text: `${P.You} missed ${bestSan}, which wins a ${NAME[bm.captured]}.` };
-      return { tag: 'missed-win', text: `${P.You} missed ${bestSan}, which wins material.` };
     }
+    const o = outcome(fenBefore, t0.pv, m.color);
+    if (o.net >= 2) return { tag: 'missed-win', text: `${P.You} missed ${bestSan}. After ${o.sans.join(' ')}, ${P.you} would win ${amount(o.net)}.` };
   }
-  return { tag: 'positional', text: `Better was ${bestSan}.` };
+  const why = t0?.pv?.length ? idea(fenBefore, t0.pv[0], ply) : '';
+  const harm = before >= 60 && after < 55 ? `This throws away ${P.your} advantage.`
+    : before >= 45 && after < 40 ? `This hands ${P.other} the advantage.` : `This makes ${P.your} position worse.`;
+  return { tag: 'positional', text: `${harm} Better was ${bestSan}${why ? `, because ${why}` : ''}.` };
 }
 
 const OPENERS = {
@@ -137,7 +182,7 @@ export function buildReview(game, evals, myColor, openings = {}) {
   let inBook = true, opening = null;
   for (let i = 0; i < moves.length; i++) {
     const m = moves[i], me = m.color, mine = me === myColor;
-    const P = mine ? { You: 'You', your: 'your' } : { You: 'Your opponent', your: 'their' };
+    const P = mine ? { You: 'You', you: 'you', your: 'your', other: 'your opponent' } : { You: 'Your opponent', you: 'they', your: 'their', other: 'you' };
     const E0 = evals[i], E1 = evals[i + 1];
     const wpMe = line => (me === 'w' ? winPct(line) : 100 - winPct(line));
     const before = wpMe(E0.lines[0]), after = wpMe(E1.lines[0]);
@@ -174,11 +219,24 @@ export function buildReview(game, evals, myColor, openings = {}) {
     let note, tag = null;
     const fill = s => s.replace('{san}', m.san).replace('{best}', bestSan ?? 'another move');
     if (cls === 'book') note = `${m.san} is a book move.${name !== plies.at(-1)?.opening ? ` This is the ${name.slice(4)}.` : ''}`;
-    else if (cls === 'brilliant') note = `${m.san}!! Brilliant! ${mine ? 'You' : 'Your opponent'} offered the ${NAME[m.piece]}, and taking it doesn't work.`;
-    else if (cls === 'great') note = `${m.san}! A great move, the only one that keeps the advantage.`;
-    else if (OPENERS[cls]) note = fill(pick(OPENERS[cls]));
-    else {
-      const r = reason(m, fens[i], E0, E1, bestSan ?? 'another move', P);
+    else if (cls === 'brilliant') {
+      const pv = E1.lines[0]?.pv ?? [], o = outcome(m.after, pv, me), takes = o.sans[0] && new Chess(m.after).move(toMoveArg(pv[0])).to === m.to;
+      const end = o.mate ? "it's checkmate" : o.net > 0 ? `${P.you} come out ${amount(o.net)} ahead` : `${P.you} get it back with a strong attack`;
+      note = `${m.san}!! Brilliant! ${P.You} offered the ${NAME[m.piece]}. ` + (takes && o.sans.length > 1
+        ? `If ${o.sans[0]} takes it, then after ${o.sans.slice(1).join(' ')} ${end}.`
+        : `Taking it doesn't work, so the best reply is ${o.sans[0] ?? 'something else'}.`);
+    } else if (cls === 'great') {
+      const s2 = E0.lines[1]?.pv?.[0] && sanOf(fens[i], E0.lines[1].pv[0]), why = idea(fens[i], uci, i);
+      note = `${m.san}! A great move, the only one that keeps ${P.your} advantage${why ? `: ${why}` : ''}.${s2 ? ` The next best, ${s2}, would have let it slip.` : ''}`;
+    } else if (cls === 'good') {
+      const why = best ? idea(fens[i], best, i) : '';
+      const same = why === idea(fens[i], uci, i); // both moves do the same thing: the reason wouldn't explain the difference
+      note = `${m.san} is a good move, but ${bestSan ?? 'another move'} was a little stronger${why && !same ? `: ${why}` : ''}.`;
+    } else if (OPENERS[cls]) {
+      const why = idea(fens[i], uci, i);
+      note = fill(pick(OPENERS[cls])) + (why ? ` ${cap(why)}.` : '');
+    } else {
+      const r = reason(m, fens[i], E0, E1, bestSan ?? 'another move', P, before, after, i);
       tag = r.tag;
       if (tag === 'allowed-mate' && cls !== 'miss') cls = 'blunder'; // walking into mate is always a blunder
       const label = { inaccuracy: 'an inaccuracy', mistake: 'a mistake', blunder: 'a blunder', miss: 'a missed chance' }[cls];
@@ -187,7 +245,7 @@ export function buildReview(game, evals, myColor, openings = {}) {
     }
     if (cls !== 'book') note += ' ' + evalPhrase(E1.lines[0]);
 
-    plies.push({ san: m.san, uci, color: me, cls, loss, acc, best, bestSan, note: note.trim(), tag, opening: name || opening, wpBefore: before });
+    plies.push({ san: m.san, uci, color: me, cls, loss, acc, best, bestSan, note: note.trim(), tag, opening: name || opening, wpBefore: before, line: E1.lines[0]?.pv?.slice(0, 8) ?? [] });
   }
 
   // shortcut: plain average of per-move accuracy; Lichess/chess.com use weighted formulas, close enough for coaching

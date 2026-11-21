@@ -49,6 +49,10 @@ assert.ok(['mistake', 'blunder'].includes(by('Be2').cls), 'Be2 allows mate');
 assert.equal(by('Be2').tag, 'allowed-mate');
 assert.ok(['best', 'great', 'brilliant'].includes(by('Nf3#').cls));
 assert.ok(r1.accuracy.b > r1.accuracy.w);
+// The coach says why: what is lost, and what a good move does.
+assert.match(by('Nxf7').note, /you lose a rook/);
+assert.match(by('Nf3#').note, /checkmate/);
+assert.ok(by('Nxf7').line.length > 0, 'keeps the line after the move for "Show why"');
 
 // Hanging the queen
 const r2 = await run('1. e4 e5 2. Qh5 Nc6 3. Qxe5+ Nxe5 *', 'w');

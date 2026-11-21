@@ -14,6 +14,7 @@ const badge = c => `<i class="sym" style="background:${c.color};color:${c.ink}">
 
 const DEPTH = 14;
 const MAX_SAVED = 30;
+const RV = 2; // review format: 2 = notes explain why + the line after each move
 let pending = null; // game picked from the list, waiting to be analysed
 let openingsP = null;
 const openings = () => (openingsP ??= fetch('vendor/openings.json').then(r => r.json()).catch(() => ({})));
@@ -58,7 +59,7 @@ function openGame(g) {
 
 // Open one of your synced chess.com games (by its URL) for review; already-reviewed games open instantly.
 export async function reviewChesscom(key) {
-  if (store.get('rv.' + key, null)) { location.hash = '#/review/' + encodeURIComponent(key); return; }
+  if (store.get('rv.' + key, null)?.v >= RV) { location.hash = '#/review/' + encodeURIComponent(key); return; }
   const g = ccGames().find(x => x.key === key), pgn = await pgnOf(key);
   if (!g || !pgn) throw new Error("Couldn't load that game from chess.com.");
   const h = k => pgn.match(new RegExp('\\[' + k + ' "([^"]*)"\\]'))?.[1];
@@ -168,7 +169,7 @@ function reviewImport(view, embedded = false) {
 
 export async function reviewGame(view, key) {
   const cached = store.get('rv.' + key, null);
-  if (cached) return renderReview(view, cached);
+  if (cached && (cached.v >= RV || pending?.key !== key)) return renderReview(view, cached); // old ones too, unless re-analysing
   if (!pending || pending.key !== key) { location.hash = '#/review'; return; }
   const g = pending;
 
@@ -195,7 +196,7 @@ export async function reviewGame(view, key) {
   }
   const rv = buildReview(game, evals, myColor, await openings());
   const R = {
-    key, myColor, white: g.white, black: g.black, wr: g.wr, br: g.br, result: resultOf(g.pgn), date: g.date ?? Date.now(),
+    v: RV, key, myColor, white: g.white, black: g.black, wr: g.wr, br: g.br, result: resultOf(g.pgn), date: g.date ?? Date.now(),
     fens: game.fens, moves: game.moves.map(m => ({ from: m.from, to: m.to })),
     evals: evals.map(e => e.lines[0] ? { cp: e.lines[0].cp, mate: e.lines[0].mate } : { cp: 0, mate: null }),
     ...rv,
@@ -259,7 +260,7 @@ function renderReview(view, R, fresh = false) {
       <div class="crumb"><a href="#/review">${icon('back')} Games</a></div>
       <div class="coachslot"></div>
       <button class="b-next primary bignext"></button>
-      <div class="btns"><button class="b-retry">${icon('retry')} Retry move</button><button class="b-line">${icon('eye')} <span>Show best line</span></button><button class="b-ask">${icon('chat')} Ask coach</button></div>
+      <div class="btns"><button class="b-retry">${icon('retry')} Retry move</button><button class="b-line">${icon('eye')} <span>Show best line</span></button><button class="b-why">${icon('target')} <span>Show why</span></button><button class="b-ask">${icon('chat')} Ask coach</button></div>
       <div class="players">
         <div><i class="dot w"></i>${esc(R.white)} ${R.wr ? `(${R.wr})` : ''}<b>${Math.round(R.accuracy.w)}%</b></div>
         <div><i class="dot b"></i>${esc(R.black)} ${R.br ? `(${R.br})` : ''}<b>${Math.round(R.accuracy.b)}%</b></div>
@@ -334,6 +335,8 @@ function renderReview(view, R, fresh = false) {
     $('.b-retry').hidden = !(p && p.color === R.myColor && BAD.includes(p.cls) && p.best);
     $('.b-line').hidden = !hasBetter(p);
     $('.b-line span').textContent = 'Show best line';
+    $('.b-why').hidden = !(p?.line?.length && (BAD.includes(p.cls) || ['brilliant', 'great'].includes(p.cls)));
+    $('.b-why span').textContent = 'Show why';
     $('.b-next').innerHTML = i < 0 ? `Start review ${icon('next')}` : i >= N - 1 ? `${icon('first')} Back to the start` : `Next ${icon('next')}`;
     if (!speak) return;
     say(i < 0 ? summaryText(R) : p.note, p && BAD.includes(p.cls) ? 'sad' : p && ['brilliant', 'great', 'best'].includes(p.cls) ? 'happy' : '');
@@ -352,6 +355,21 @@ function renderReview(view, R, fresh = false) {
       if (my !== run) return; // another button was pressed meanwhile
     }
     go(j);
+  }
+
+  // Show why: from the position after the move, Stockfish's best play shows what the move allows (or what it wins).
+  async function showWhy() {
+    if (line) return jump(idx);
+    const p = R.plies[idx], my = ++run;
+    line = true;
+    $('.b-why span').textContent = 'Back to the game';
+    say(`${BAD.includes(p.cls) ? `Here's the problem with ${p.san}` : `Here's why ${p.san} works`}. Watch: ${sanLine(R.fens[idx + 1], p.line)}.`);
+    board.load(R.fens[idx + 1], { interactive: false, lastMove: [R.moves[idx].from, R.moves[idx].to] });
+    for (const mv of p.line) {
+      await wait(800);
+      if (my !== run) return;
+      try { board.play(mv); } catch { return; }
+    }
   }
 
   // Show best line: back to the position before the move, then Stockfish's best line plays out on the board.
@@ -394,6 +412,7 @@ function renderReview(view, R, fresh = false) {
     say(`In the game you played ${p.san}. Find something better!`);
   };
   $('.b-line').onclick = showLine;
+  $('.b-why').onclick = showWhy;
   $('.b-next').onclick = next;
   const nav = { first: () => jump(-1), prev: () => jump(idx - 1), next: () => jump(idx + 1), last: () => jump(N - 1) };
   view.querySelectorAll('.nav button').forEach(b => b.onclick = () => nav[b.dataset.n]());
