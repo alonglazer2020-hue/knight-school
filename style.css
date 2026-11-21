@@ -313,6 +313,8 @@ coords { font-family: var(--font); font-weight: 700; }
 @media (max-width: 1000px) {
   .top { gap: .9rem; }
   .logo span { display: none; }
+  nav.tabs a { padding: 0 .6rem; }
+  nav.tabs a .i { display: none; }
   .dojo { grid-template-columns: 1fr; }
   .coachcol { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
   .coachcol .coachslot, .coachcol .note { grid-column: 1 / -1; }
@@ -328,7 +330,7 @@ coords { font-family: var(--font); font-weight: 700; }
   nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; height: calc(64px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; background: var(--ink-1); border-top: 1px solid var(--ink-3); }
   nav.tabs a { flex-direction: column; justify-content: center; gap: .2rem; padding: 0; font-size: .74rem; box-shadow: inset 0 3px 0 transparent; }
   nav.tabs a.active { box-shadow: inset 0 3px 0 var(--canvas); }
-  nav.tabs .i { width: 1.35em; height: 1.35em; }
+  nav.tabs .i, nav.tabs a .i { display: block; width: 1.35em; height: 1.35em; }
   .page { padding: 1.4rem 1rem 3rem; }
   .rankcard { padding: 1.3rem 1.1rem 1rem; }
   .coachcol { grid-template-columns: 1fr; }
