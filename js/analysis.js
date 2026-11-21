@@ -5,17 +5,17 @@ import { winPct } from './engine.js';
 import { uciOf, toMoveArg, epd } from './chessutil.js';
 
 export const CLASSES = {
-  // A severity scale: good moves in canvas and ink, problems in amber to red. `icon` names an icons.js icon used instead of text.
-  brilliant: { label: 'Brilliant', sym: '!!', color: '#F1ECE0', ink: '#1B2033', mark: '#F1ECE0' },
-  great: { label: 'Great', sym: '!', color: '#F1ECE0', ink: '#1B2033', mark: '#F1ECE0' },
-  best: { label: 'Best', sym: 'best', icon: 'star', color: '#DCE0EC', ink: '#1B2033' },
-  excellent: { label: 'Excellent', sym: 'ok', icon: 'check', color: '#B8C0D8', ink: '#1B2033' },
-  good: { label: 'Good', sym: 'ok', icon: 'check', color: '#929CBE', ink: '#1B2033' },
-  book: { label: 'Book', sym: 'book', icon: 'book', color: '#5E6B98', ink: '#FFFFFF' },
-  inaccuracy: { label: 'Inaccuracy', sym: '?!', color: '#F2B04A', ink: '#1B2033' },
-  mistake: { label: 'Mistake', sym: '?', color: '#FF8A78', ink: '#1B2033' },
-  miss: { label: 'Miss', sym: 'miss', icon: 'close', color: '#FF8A78', ink: '#1B2033' },
-  blunder: { label: 'Blunder', sym: '??', color: '#C9455A', ink: '#FFFFFF' },
+  // The familiar grade colours; `ink` keeps the symbol readable on each, `icon` names an icons.js icon used instead of text.
+  brilliant: { label: 'Brilliant', sym: '!!', color: '#26C2A3', ink: '#0B2B24' },
+  great: { label: 'Great', sym: '!', color: '#749BBF', ink: '#0F1B26' },
+  best: { label: 'Best', sym: 'best', icon: 'star', color: '#81B64C', ink: '#13200A' },
+  excellent: { label: 'Excellent', sym: 'ok', icon: 'check', color: '#96BC4B', ink: '#13200A' },
+  good: { label: 'Good', sym: 'ok', icon: 'check', color: '#96AF8B', ink: '#13200A' },
+  book: { label: 'Book', sym: 'book', icon: 'book', color: '#A88865', ink: '#1E150B' },
+  inaccuracy: { label: 'Inaccuracy', sym: '?!', color: '#F7C045', ink: '#2A1F05' },
+  mistake: { label: 'Mistake', sym: '?', color: '#FFA459', ink: '#2B1605' },
+  miss: { label: 'Miss', sym: 'miss', icon: 'close', color: '#FF7769', ink: '#2B0B07' },
+  blunder: { label: 'Blunder', sym: '??', color: '#CA3431', ink: '#FFFFFF' },
 };
 export const BAD = ['inaccuracy', 'mistake', 'miss', 'blunder'];
 const VAL = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };

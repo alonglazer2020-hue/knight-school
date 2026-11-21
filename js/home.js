@@ -1,12 +1,14 @@
-// Coach home (the dojo): your belt and exactly what earns the next one, Coach Knox, today's session, and recurring weaknesses.
+// Coach home: your chess.com Elo and its trend, the next goal, Coach Knox, today's plan, recent games and what keeps costing you.
 import { coachBox, say, sfx } from './coach.js';
 import { nextLesson, doneSet } from './learn.js';
 import { ALL_LESSONS } from './lessons-data.js';
 import { THEMES, mistakes } from './puzzles.js';
-import { reviewLatest } from './review.js';
+import { gameRows, bindGameRows, reviewChesscom } from './review.js';
 import * as store from './store.js';
 import { openChat, dailyNote } from './ai-coach.js';
-import { rank, beltSvg, playerStats, today } from './belts.js';
+import { level, levelNews, today } from './levels.js';
+import { account, stats, games as ccGames, history, lastSync, syncing } from './chesscom.js';
+import { signInForm } from './settings.js';
 import { icon } from './icons.js';
 
 const WEAK = {
@@ -31,105 +33,113 @@ export function weaknesses() {
 }
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const ago = x => { const m = Math.round((Date.now() - x) / 60000); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)}h ago` : `${Math.round(m / 1440)}d ago`; };
+const cap = s => s[0].toUpperCase() + s.slice(1);
+
+// The rating trend over the last games, as a small line chart.
+function spark(h) {
+  if (h.length < 2) return '';
+  const lo = Math.min(...h.map(x => x.r)), hi = Math.max(...h.map(x => x.r)), w = 240, ht = 64;
+  const pts = h.map((x, i) => `${((i / (h.length - 1)) * w).toFixed(1)},${(ht - 4 - ((x.r - lo) / Math.max(hi - lo, 1)) * (ht - 8)).toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${w} ${ht}" preserveAspectRatio="none" role="img" aria-label="Rating over your last ${h.length} games, from ${h[0].r} to ${h.at(-1).r}">
+    <polygon points="0,${ht} ${pts} ${w},${ht}" class="area"/><polyline points="${pts}" class="line"/></svg>`;
+}
 
 export function coachHome(view) {
-  const games = store.get('games', []);
-  const st = playerStats();
-  const r = rank(st);
-  const weak = weaknesses();
-  const top = weak[0];
+  const acc = account(), st = stats(), lv = level();
+  const weak = weaknesses(), top = weak[0];
   const due = mistakes().filter(m => !m.due || m.due <= Date.now()).length;
-  const user = store.get('username', '');
-  const theme = top?.theme ?? 'mix';
-  const lessonTitle = id => ALL_LESSONS.find(l => l.id === id)?.title;
-  const t = today();
+  const t = today(), done = doneSet(), recent = ccGames().slice(0, 6);
+  const theme = top?.theme ?? lv.band.themes[0] ?? 'mix';
+  const lesson = nextLesson(), bandLesson = lesson && lv.band.lessons.includes(lesson.id);
 
-  // Promotion and new stripes since this device last showed the belt.
-  const seen = store.get('beltSeen', null);
-  const promoted = seen && r.level > seen.level;
-  const fresh = !seen || promoted ? 0 : Math.max(0, r.earned - seen.stripes);
-  store.set('beltSeen', { level: r.level, stripes: r.earned });
-
-  // The session: the next belt's lesson first, then the weak spot, your own mistakes, and your newest game.
-  const beltLesson = r.stripes.find(s => !s.ok && s.go.startsWith('#/learn/'));
-  const lesson = beltLesson ? ALL_LESSONS.find(l => '#/learn/' + l.id === beltLesson.go) : nextLesson();
+  // The plan: your newest unreviewed game, your own mistakes, puzzles on the weak spot, then a lesson for your Elo.
+  const newest = recent[0], unreviewed = newest && !store.get('rv.' + newest.key, null);
+  const target = recent.find(g => !store.get('rv.' + g.key, null)); // the newest game you haven't reviewed yet
   const steps = [
-    due && { href: '#/puzzles?mode=mistakes', t: `Warm up: ${Math.min(due, 5)} position${due > 1 ? 's' : ''} from your own games`, m: 'Spaced repetition: they come back until you get them right twice', ok: (t.drilled ?? 0) >= Math.min(due, 5) },
-    lesson && (t.lesson
-      ? { href: `#/learn/${lesson.id}`, t: 'Lesson done today', m: `Want more? Next up: ${lesson.title}`, ok: true }
-      : { href: `#/learn/${lesson.id}`, t: `Lesson: ${lesson.title}`, m: beltLesson ? `A stripe toward ${r.next.name}` : 'About 5 minutes', ok: false }),
-    { href: `#/puzzles?theme=${theme}`, t: `10 puzzles: ${THEMES[theme]?.label ?? 'Mixed'}`, m: top ? `Your weak spot: ${top.label.toLowerCase()}` : 'Sharpen your eye', ok: t.solved >= 10, prog: Math.min(t.solved, 10) + '/10' },
-    { btn: 'b-latest', t: 'Review your newest game', m: user ? `Pulls it from ${store.get('source', 'chesscom') === 'lichess' ? 'Lichess' : 'chess.com'} and finds your mistakes` : 'Add your username on the Review page', ok: t.reviewed },
+    target && { act: 'review', ic: 'chart', t: target === newest ? 'Review your last game' : 'Review a recent game', m: `${target.res === 'W' ? 'Won' : target.res === 'L' ? 'Lost' : 'Draw'} vs ${target.opp} · ${cap(target.tc)} · ${ago(target.t)} · about 5 min`, ok: false },
+    acc && !target && recent.length && { href: '#/review', ic: 'chart', t: 'All recent games reviewed', m: 'Play a game on chess.com and it shows up here', ok: true },
+    !acc && { href: '#/review', ic: 'chart', t: 'Review a game', m: 'Connect chess.com above, or paste a game on the Review page', ok: t.reviewed },
+    due && { href: '#/puzzles?mode=mistakes', ic: 'retry', t: `Fix ${Math.min(due, 5)} mistake${due > 1 ? 's' : ''} from your games`, m: 'They come back until you solve them twice · about 5 min', ok: (t.drilled ?? 0) >= Math.min(due, 5) },
+    { href: `#/puzzles?theme=${theme}`, ic: 'puzzle', t: `10 puzzles: ${THEMES[theme]?.label ?? 'Mixed'}`, m: `${top ? `Your weak spot: ${top.label.toLowerCase()}` : `Picked for ${lv.rating} Elo`} · about 10 min`, ok: t.solved >= 10, prog: `${Math.min(t.solved, 10)}/10` },
+    lesson && { href: `#/learn/${lesson.id}`, ic: 'book', t: `Lesson: ${lesson.title}`, m: `${bandLesson ? `For your level: ${lv.band.focus.toLowerCase()}` : 'Next lesson for your level'} · about 5 min`, ok: t.lesson },
   ].filter(Boolean);
-
-  const firstOpen = r.stripes.find(s => !s.ok);
-  const stripeRow = s => `<li class="${s.ok ? 'ok' : ''}">
-      <span class="tick">${icon(s.ok ? 'check' : 'lock')}</span>
-      <span class="lbl">${esc(s.label)}${!s.ok && s.need ? `<small>${s.have} / ${s.need}</small>` : ''}</span>
-      ${s.ok ? '<span class="done">Earned</span>' : `<a class="btn sm ${s === firstOpen ? 'primary' : ''}" href="${s.go}">Go ${icon('arrow')}</a>`}</li>`;
+  const firstOpen = steps.find(x => !x.ok);
+  const others = acc && st ? ['rapid', 'blitz', 'bullet', 'daily'].filter(x => x !== lv.tc && st[x]?.r).slice(0, 3) : [];
+  const d = lv.delta;
 
   view.innerHTML = `<div class="page home">
-    <section class="dojo">
-      <div class="rankcard ${promoted ? 'promoted' : ''}" style="--belt:${r.belt.color};--belt-ink:${r.belt.ink}">
-        <div class="rank-head">
-          <h1 class="rankname">${r.belt.name}</h1>
-          <p class="rank-about">${promoted ? 'Promoted! ' : ''}${esc(r.belt.about)}</p>
-        </div>
-        ${beltSvg(r.belt, r.earned, { width: 640, height: 44, cls: 'belt big', fresh })}
-        ${r.next ? `<div class="rank-next">
-          <h2>Next: ${r.next.name} <span class="count">${r.earned} of 4 stripes</span></h2>
-          <ol class="stripes">${r.stripes.map(stripeRow).join('')}</ol>
-        </div>` : '<p class="rank-about">Every belt earned. Keep reviewing your games and fixing your mistakes.</p>'}
+    <header class="welcome">
+      <h1>${acc ? `Welcome back, ${esc(acc.username)}` : 'Welcome to Knight School'}</h1>
+      ${acc ? `<span class="pill">${icon('check')} Connected to chess.com</span><span class="m synced">${syncing() ? 'Loading your games…' : `Games synced ${ago(lastSync())}`}</span>` : ''}
+    </header>
+
+    ${acc ? '' : `<section class="card connect"><div><h2>Connect your chess.com account</h2>
+      <p class="sub">Type your chess.com username. Knight School pulls in your Elo and every game you play, and builds your training from them.</p></div><div class="formslot"></div></section>`}
+
+    <section class="card ratings">
+      <div class="main-rating">
+        <span class="lbl">${lv.label}${acc ? '' : ' · Knight School'}</span>
+        <div class="big"><b>${lv.rating}</b>${d != null ? `<span class="delta ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d > 0 ? '+' : d < 0 ? '−' : '±'}${Math.abs(d)} this month</span>` : ''}</div>
+        ${spark(history(lv.tc).slice(-30))}${history(lv.tc).length > 1 ? `<div class="spark-cap"><span>${Math.min(history(lv.tc).length, 30)} games ago</span><span>Last game</span></div>` : ''}
       </div>
-      <aside class="coachcol">
-        <div class="coachslot"></div>
-        <div class="note" hidden></div>
-        <button class="b-talk">${icon('chat')} Talk to your coach</button>
-        <dl class="numbers">
-          <div><dt>Puzzle rating</dt><dd>${st.rating}</dd></div>
-          <div><dt>Puzzles solved</dt><dd>${st.solved}</dd></div>
-          <div><dt>Lessons</dt><dd>${st.done.size}<small>/${ALL_LESSONS.length}</small></dd></div>
-          <div><dt>${games.length ? `Accuracy, last ${Math.min(games.length, 5)} game${Math.min(games.length, 5) === 1 ? '' : 's'}` : 'Accuracy (review a game)'}</dt><dd>${st.acc ?? '–'}${st.acc != null ? '<small>%</small>' : ''}</dd></div>
-        </dl>
-      </aside>
+      <div class="side-ratings">
+        ${others.length ? `<div class="tiles">${others.map(x => `<div class="tile"><span class="lbl">${cap(x)}</span><b>${st[x].r}</b><small>best ${st[x].best ?? '–'}</small></div>`).join('')}
+          <div class="tile"><span class="lbl">Puzzle rating</span><b>${Math.round(store.get('prating', 800))}</b><small>on Knight School</small></div></div>` : ''}
+        <div class="goal">
+          <div class="goal-head"><span>Next goal: <b>${lv.goal}</b></span><span class="m">${lv.toGo} to go</span></div>
+          <div class="bar" role="progressbar" aria-label="Progress to ${lv.goal}" aria-valuemin="${lv.prev}" aria-valuemax="${lv.goal}" aria-valuenow="${lv.rating}"><i style="width:${lv.pct}%"></i></div>
+          <div class="goal-foot"><span>${lv.prev}</span><span class="focus">${lv.band.name}: ${lv.band.focus.toLowerCase()}</span><span>${lv.goal}</span></div>
+        </div>
+      </div>
     </section>
 
-    <section>
-      <h2>Today's session</h2>
-      <ol class="session">${steps.map(s => {
-        const inner = `<span class="n">${s.ok ? icon('check') : ''}</span><span class="txt"><span class="t">${esc(s.t)}</span><span class="m">${esc(s.m)}</span></span>${s.prog && !s.ok ? `<span class="prog">${s.prog}</span>` : ''}${icon('arrow', 'go')}`;
-        return `<li class="${s.ok ? 'ok' : ''}">${s.btn ? `<button class="srow ${s.btn}">${inner}</button>` : `<a class="srow" href="${s.href}">${inner}</a>`}</li>`;
-      }).join('')}</ol>
-    </section>
-
-    ${weak.length ? `<section><h2>What I've noticed in your games</h2><div class="weak">${weak.slice(0, 3).map(w => `<article class="weakrow">
-      <h3>${w.label} <span class="count">${w.n}× in your last ${Math.min(games.length, 10)} games</span></h3><p>${w.advice}</p>
-      <div class="row"><a class="btn" href="#/learn/${w.lesson}">${icon('book')} ${lessonTitle(w.lesson) ?? 'Openings'}</a><a class="btn primary" href="#/puzzles?theme=${w.theme}">${icon('puzzle')} Train ${THEMES[w.theme]?.label ?? w.theme}</a></div></article>`).join('')}</div></section>` : ''}
+    <div class="cols">
+      <div class="col">
+        <section class="card knox"><div class="coachslot"></div><div class="note" hidden></div><button class="b-talk">${icon('chat')} Ask coach</button></section>
+        <section class="card"><div class="card-head"><h2>Today's plan</h2><span class="m">${steps.filter(x => x.ok).length} of ${steps.length} done</span></div>
+          <ol class="plan">${steps.map(x => `<li class="${x.ok ? 'ok' : ''}"><span class="pi">${icon(x.ok ? 'check' : x.ic)}</span>
+            <span class="txt"><b>${esc(x.t)}</b><small>${esc(x.m)}</small></span>${x.prog && !x.ok ? `<span class="prog">${x.prog}</span>` : ''}
+            ${x.href ? `<a class="btn ${x === firstOpen ? 'primary' : ''}" href="${x.href}">${x.ok ? 'Again' : 'Start'}</a>` : `<button class="act-${x.act} ${x === firstOpen ? 'primary' : ''}">Start</button>`}</li>`).join('')}</ol>
+          <p class="err plan-err" role="status"></p></section>
+      </div>
+      <div class="col">
+        ${acc ? `<section class="card"><div class="card-head"><h2>Recent games</h2><a class="m" href="#/review">See all</a></div>
+          ${recent.length ? `<ol class="gamelist">${gameRows(recent)}</ol>` : '<p class="sub">No games yet. Play one on chess.com and it shows up here.</p>'}</section>` : ''}
+        <section class="card"><div class="card-head"><h2>What keeps costing you</h2>${weak.length ? `<span class="m">last ${Math.min(store.get('games', []).length, 10)} reviewed games</span>` : ''}</div>
+          ${weak.length ? weak.slice(0, 3).map(w => `<article class="weakrow"><h3>${w.label} <span class="count">${w.n}×</span></h3><p>${w.advice}</p>
+            <div class="row"><a class="btn sm" href="#/learn/${w.lesson}">${icon('book')} ${ALL_LESSONS.find(l => l.id === w.lesson)?.title ?? 'Lesson'}</a><a class="btn sm" href="#/puzzles?theme=${w.theme}">${icon('puzzle')} ${THEMES[w.theme]?.label ?? w.theme} puzzles</a></div></article>`).join('')
+          : '<p class="sub">Review a few of your games and I\'ll find the mistakes you keep repeating.</p>'}</section>
+      </div>
+    </div>
   </div>`;
-  view.querySelector('.coachslot').append(coachBox());
-  view.querySelector('.b-talk').onclick = () => openChat();
+  const $ = q => view.querySelector(q);
+  $('.coachslot').append(coachBox());
+  $('.b-talk').onclick = () => openChat();
+  if (!acc) $('.formslot').append(signInForm(() => dispatchEvent(new HashChangeEvent('hashchange')))); // re-route: sidebar and page
+  const err = m => { $('.plan-err').textContent = m; };
+  bindGameRows(view, err);
+  $('.act-review')?.addEventListener('click', async e => {
+    e.target.disabled = true; e.target.textContent = 'Loading…';
+    try { await reviewChesscom(target.key); } catch (x) { err(x.message); e.target.disabled = false; e.target.textContent = 'Start'; }
+  });
 
-  view.querySelector('.b-latest').onclick = async () => {
-    if (!user) { location.hash = '#/review'; return; }
-    say('Fetching your newest game...');
-    try { await reviewLatest(); } catch (e) { say(`I couldn't load your games: ${e.message}`); }
-  };
-
-  const nextStripe = r.stripes.find(s => !s.ok);
+  const news = acc ? levelNews() : '';
   let msg;
-  if (promoted) msg = `Promotion! You earned your ${r.belt.name}. ${r.next ? `Now let's go for ${r.next.name}.` : ''}`;
-  else if (!games.length && !st.done.size) msg = "Hey, I'm Coach Knox, and this is your dojo. You start as a white belt. Earn four stripes to get each new belt. Your first stripe is the lesson on how the pieces move.";
-  else if (top) msg = `Welcome back. In your games, the thing that keeps costing you is ${top.label.toLowerCase()}. ${top.advice}`;
-  else if (nextStripe) msg = `Welcome back. You're ${4 - r.earned} stripe${4 - r.earned > 1 ? 's' : ''} from ${r.next.name}. Next stripe: ${nextStripe.label.toLowerCase()}.`;
-  else msg = "Welcome back. Review a chess.com game and I'll find your weak spots.";
-  say(msg, promoted ? 'happy' : '');
-  if (promoted || fresh) sfx.win();
+  if (news) msg = news + ' Great work.';
+  else if (!acc) msg = "Hi, I'm Coach Knox. Connect your chess.com account and I'll look at your real games, your Elo and what keeps costing you, then plan your training.";
+  else if (unreviewed && newest.res === 'L') msg = `You lost your last game to ${newest.opp}. Let's review it first and find the moment it went wrong.`;
+  else if (unreviewed) msg = `New game against ${newest.opp}. Let's review it while it's fresh.`;
+  else if (top) msg = `In your games, the thing that keeps costing you is ${top.label.toLowerCase()}. ${top.advice}`;
+  else msg = `You're ${lv.toGo} points from ${lv.goal}. At your level the focus is ${lv.band.focus.toLowerCase()}.`;
+  say(msg, news ? 'happy' : '');
+  if (news) sfx.win();
 
-  // The AI coach's note for today, when you've connected it.
-  const note = view.querySelector('.note');
+  // The AI coach's note for today, when it's connected.
+  const note = $('.note');
   dailyNote().then(n => {
     if (!n || !view.isConnected) return;
-    note.innerHTML = `<p>${n.html}</p>${n.links.length ? `<div class="msg-links">${n.links.map(([h, l]) => `<a class="btn sm" href="${h}">${l}</a>`).join('')}</div>` : ''}`;
+    note.innerHTML = `<p>${n.html}</p>${n.links.length ? `<div class="msg-links">${n.links.map(([hr, l]) => `<a class="btn sm" href="${hr}">${l}</a>`).join('')}</div>` : ''}`;
     note.hidden = false;
   }).catch(() => {});
 }

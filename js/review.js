@@ -6,7 +6,8 @@ import { parseGame, buildReview, terminalEval, CLASSES, BAD } from './analysis.j
 import { Chess } from '../vendor/chess.js';
 import * as store from './store.js';
 import { setPage, openChat, sanLine } from './ai-coach.js';
-import { bumpToday, rank, stripeNews } from './belts.js';
+import { bumpToday } from './levels.js';
+import { account, games as ccGames, pgnOf } from './chesscom.js';
 import { icon, iconPaths } from './icons.js';
 
 const badge = c => `<i class="sym" style="background:${c.color};color:${c.ink}">${c.icon ? icon(c.icon) : c.sym}</i>`;
@@ -55,18 +56,67 @@ function openGame(g) {
   location.hash = '#/review/' + encodeURIComponent(g.key);
 }
 
+// Open one of your synced chess.com games (by its URL) for review; already-reviewed games open instantly.
+export async function reviewChesscom(key) {
+  if (store.get('rv.' + key, null)) { location.hash = '#/review/' + encodeURIComponent(key); return; }
+  const g = ccGames().find(x => x.key === key), pgn = await pgnOf(key);
+  if (!g || !pgn) throw new Error("Couldn't load that game from chess.com.");
+  const h = k => pgn.match(new RegExp('\\[' + k + ' "([^"]*)"\\]'))?.[1];
+  openGame({ key, pgn, white: h('White'), black: h('Black'), wr: +h('WhiteElo') || undefined, br: +h('BlackElo') || undefined, myColor: g.c, date: g.t });
+}
+
 // Used by the Coach page's one-click button.
 export async function reviewLatest() {
+  if (account() && ccGames()[0]) return reviewChesscom(ccGames()[0].key);
   const g = (await fetchGames(store.get('source', 'chesscom'), store.get('username', '')))[0];
   if (!g) throw new Error('No games found.');
   openGame(g);
 }
 
+// Rows for synced chess.com games (Coach page and Review page share them).
+const RES = { W: 'Won', L: 'Lost', D: 'Draw' };
+const ctlText = c => { const [base, inc] = String(c ?? '').split('+'); return base.includes('/') ? 'Daily' : `${Math.round(+base / 60) || base}${inc ? '|' + inc : ''}`; };
+export function gameRows(list) {
+  const all = ccGames();
+  return list.map(g => {
+    const prev = all.find(x => x.tc === g.tc && x.t < g.t), d = prev && g.me ? g.me - prev.me : null;
+    const rv = store.get('rv.' + g.key, null);
+    return `<li class="grow"><span class="res ${g.res}" title="${RES[g.res]}">${g.res}</span>
+      <span class="who"><b>${esc(g.opp)}</b> <small>(${g.oppR ?? '?'})</small><small class="open">${esc(g.open || g.tc)}</small></span>
+      <span class="tc">${g.tc === 'daily' ? 'Daily' : `${g.tc[0].toUpperCase() + g.tc.slice(1)} ${ctlText(g.ctl)}`}</span>
+      <span class="delta ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d == null ? '' : d > 0 ? '+' + d : d < 0 ? '−' + -d : '±0'}</span>
+      <span class="acc" title="${rv ? 'Your accuracy' : 'Not reviewed yet'}">${rv ? Math.round(rv.accuracy[rv.myColor]) + '%' : ''}</span>
+      <button class="link rv" data-key="${esc(g.key)}">Review</button></li>`;
+  }).join('');
+}
+export function bindGameRows(root, onError) {
+  root.querySelectorAll('.rv').forEach(b => b.onclick = async () => {
+    b.disabled = true; b.textContent = 'Loading…';
+    try { await reviewChesscom(b.dataset.key); } catch (e) { b.disabled = false; b.textContent = 'Review'; onError?.(e.message); }
+  });
+}
+
 export function reviewIndex(view) {
+  if (account()) return reviewMine(view);
+  reviewImport(view);
+}
+function reviewMine(view) {
+  const list = ccGames().slice(0, 30), saved = store.get('reviews', []);
+  view.innerHTML = `<div class="page"><h1>Game Review</h1>
+    <p class="sub">Your newest chess.com games. Pick one: Stockfish 17 grades every move, Coach Knox explains your mistakes, and they become puzzles.</p>
+    <section class="card"><div class="card-head"><h2>Your games</h2><span class="m">${account().username} · chess.com</span></div>
+      ${list.length ? `<ol class="gamelist">${gameRows(list)}</ol>` : '<p class="sub">No games yet. Play one on chess.com, then come back.</p>'}<p class="err" role="status"></p></section>
+    <details class="card"><summary>Review a game from somewhere else (Lichess or a PGN)</summary><div class="importbox"></div></details>
+    ${saved.length ? `<h2>Past reviews</h2><div class="games">${saved.map(x => `<a class="game" href="#/review/${encodeURIComponent(x.key)}"><span>${esc(x.title)}</span><span class="m">${x.acc != null ? Math.round(x.acc) + '% accuracy' : ''}</span></a>`).join('')}</div>` : ''}
+  </div>`;
+  bindGameRows(view, m => { view.querySelector('.err').textContent = m; });
+  reviewImport(view.querySelector('.importbox'), true);
+}
+function reviewImport(view, embedded = false) {
   let src = store.get('source', 'chesscom');
   const saved = store.get('reviews', []);
-  view.innerHTML = `<div class="page"><h1>Game Review</h1>
-    <p class="sub">Free, unlimited reviews with Stockfish 17. Every move gets a grade and an explanation, and your mistakes become puzzles.</p>
+  view.innerHTML = `${embedded ? '' : `<div class="page"><h1>Game Review</h1>
+    <p class="sub">Free, unlimited reviews with Stockfish 17. Every move gets a grade and an explanation, and your mistakes become puzzles. Tip: connect your chess.com account in Settings and your games show up here by themselves.</p>`}
     <div class="panel">
       <div class="seg"><button data-src="chesscom">chess.com</button><button data-src="lichess">Lichess</button></div>
       <form class="row user"><input name="u" placeholder="Your username" autocomplete="username" value="${esc(store.get('username', ''))}"><button class="primary">Load my games</button></form>
@@ -74,9 +124,9 @@ export function reviewIndex(view) {
       <details><summary>Or paste a PGN</summary><textarea placeholder="[Event ...] 1. e4 e5 ..."></textarea>
         <div class="row"><label><input type="checkbox" class="asblack"> I played Black</label><button class="b-pgn primary">Review</button></div></details>
     </div>
-    ${saved.length ? `<h2>Past reviews</h2><div class="games">${saved.map(s => `<a class="game" href="#/review/${encodeURIComponent(s.key)}">
+    ${!embedded && saved.length ? `<h2>Past reviews</h2><div class="games">${saved.map(s => `<a class="game" href="#/review/${encodeURIComponent(s.key)}">
       <span>${esc(s.title)}</span><span class="m">${s.acc != null ? Math.round(s.acc) + '% accuracy' : ''}</span></a>`).join('')}</div>` : ''}
-  </div>`;
+  ${embedded ? '' : '</div>'}`;
   const $ = s => view.querySelector(s);
   const paint = () => view.querySelectorAll('.seg button').forEach(b => b.classList.toggle('active', b.dataset.src === src));
   view.querySelectorAll('.seg button').forEach(b => b.onclick = () => { src = b.dataset.src; store.set('source', src); paint(); });
@@ -150,11 +200,8 @@ export async function reviewGame(view, key) {
     evals: evals.map(e => e.lines[0] ? { cp: e.lines[0].cp, mate: e.lines[0].mate } : { cp: 0, mate: null }),
     ...rv,
   };
-  const before = rank();
   saveReview(R);
   renderReview(view, R, true);
-  const news = stripeNews(before);
-  if (news) say(summaryText(R) + news, 'happy');
 }
 
 function saveReview(R) {
@@ -245,7 +292,7 @@ function renderReview(view, R, fresh = false) {
   function shapesFor(i) {
     if (i < 0) return [];
     const p = R.plies[i], c = CLASSES[p.cls], m = R.moves[i];
-    const s = [{ orig: m.to, customSvg: { html: `<circle cx="82" cy="18" r="16" fill="${c.color}" stroke="#121A3A" stroke-width="2.5"/>${c.icon
+    const s = [{ orig: m.to, customSvg: { html: `<circle cx="82" cy="18" r="16" fill="${c.color}" stroke="#fff" stroke-width="2.5"/>${c.icon
       ? `<g transform="translate(70.5 6.5) scale(.96)" fill="none" stroke="${c.ink}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${iconPaths(c.icon)}</g>`
       : `<text x="82" y="24.5" font-size="${c.sym.length > 1 ? 16 : 20}" font-weight="800" text-anchor="middle" fill="${c.ink}" font-family="Archivo, sans-serif">${c.sym}</text>`}` } }];
     if (showBest && p.best && p.uci !== p.best && !['book', 'best', 'brilliant', 'great'].includes(p.cls)) s.push(arrow(p.best, 'green'));

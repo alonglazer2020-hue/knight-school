@@ -1,6 +1,6 @@
 import { Chess } from '../vendor/chess.js';
 import { setPage } from './ai-coach.js';
-import { bumpToday, BELTS, rank, stripeNews } from './belts.js';
+import { bumpToday, BANDS, level } from './levels.js';
 import { icon } from './icons.js';
 import { Board, arrow, circle, uciOf } from './board.js';
 import { coachBox, say, sfx } from './coach.js';
@@ -13,27 +13,28 @@ const pick = a => a[Math.floor(Math.random() * a.length)];
 const fenOf = s => { if (s.fen) return s.fen; const c = new Chess(); for (const m of s.pgn.split(' ')) c.move(m); return c.fen(); };
 
 export const doneSet = () => new Set(store.get('done', []));
-export const nextLesson = () => ALL_LESSONS.find(l => !doneSet().has(l.id));
+// Next lesson for your level: your Elo band's first unfinished one, else the nearest band below with one left, else any.
+export function nextLesson() {
+  const done = doneSet(), bands = BANDS.slice(0, BANDS.indexOf(level().band) + 1).reverse();
+  for (const b of bands) { const id = b.lessons.find(x => !done.has(x) && ALL_LESSONS.some(l => l.id === x)); if (id) return ALL_LESSONS.find(l => l.id === id); }
+  return ALL_LESSONS.find(l => !done.has(l.id));
+}
 
-// The curriculum as a belt path: each belt's lessons are stripes toward it.
-const PATH = [
-  ['yellow', ['pieces', 'check', 'special']],
-  ['orange', ['values', 'principles', 'scholar-defense']],
-  ['green', ['fork', 'pin', 'discovered']],
-  ['blue', ['mates', 'endgame']],
-  ['purple', ['italian', 'london', 'queens-gambit', 'caro-kann', 'slav']],
-];
+// The curriculum by rating: each band's lessons are what players around that Elo need next.
+const bandLabel = (b, i) => i === 0 ? `Under ${b.max}` : b.max === Infinity ? `${BANDS[i - 1].max}+` : `${BANDS[i - 1].max}–${b.max}`;
 export function learnIndex(view) {
   const done = doneSet();
   const nxt = nextLesson();
+  const lv = level();
   view.innerHTML = `<div class="page learn"><h1>Learn</h1>
-    <p class="sub">${done.size} of ${ALL_LESSONS.length} lessons done. Each lesson is interactive: you move the pieces, Coach Knox talks you through it, and it counts as a stripe toward your next belt.</p>
-    ${PATH.map(([beltId, ids]) => {
-      const b = BELTS.find(x => x.id === beltId);
+    <p class="sub">${done.size} of ${ALL_LESSONS.length} lessons done. Lessons are grouped by rating: start with the ones for your Elo (${lv.rating}). Each one is interactive and Coach Knox talks you through it.</p>
+    ${BANDS.map((b, bi) => {
+      const ids = b.lessons.filter(id => ALL_LESSONS.some(l => l.id === id));
+      if (!ids.length) return '';
       const n = ids.filter(id => done.has(id)).length;
-      return `<section class="beltsec" style="--belt:${b.color}">
-      <h2><span class="swatch"></span>${b.name}<span class="count">${n} of ${ids.length} done</span></h2>
-      <p class="sub">${b.about}</p>
+      return `<section class="bandsec ${b === lv.band ? 'yours' : ''}">
+      <h2>${bandLabel(b, bi)} Elo<span class="count">${b === lv.band ? 'Your level · ' : ''}${n} of ${ids.length} done</span></h2>
+      <p class="sub">${b.name}: ${b.focus}.</p>
       <ol class="lessons">${ids.map(id => ALL_LESSONS.find(l => l.id === id)).map(l => `<li><a class="lesson ${done.has(l.id) ? 'done' : ''} ${nxt?.id === l.id ? 'next' : ''}" href="#/learn/${l.id}">
         <span class="st">${done.has(l.id) ? icon('check') : nxt?.id === l.id ? icon('play') : ''}</span>
         <span class="t">${l.title}</span>
@@ -134,12 +135,10 @@ export function lessonView(view, id) {
 
   $('.b-next').onclick = () => {
     if (i < lesson.steps.length - 1) { i++; return show(); }
-    const before = rank();
     const done = doneSet(); done.add(lesson.id); store.set('done', [...done]); bumpToday('lesson', true);
-    const news = stripeNews(before);
     sfx.win();
     const nxt = nextLesson();
-    say(`Lesson complete!${news} ${nxt ? `Up next: ${nxt.title}.` : 'You finished every lesson. Time for puzzles!'}`, 'happy');
+    say(`Lesson complete! ${nxt ? `Up next: ${nxt.title}.` : 'You finished every lesson. Time for puzzles!'}`, 'happy');
     $('.btns').innerHTML = `<a class="btn" href="#/learn">All lessons</a>${nxt ? `<a class="btn primary" href="#/learn/${nxt.id}">Next lesson ${icon('arrow')}</a>` : `<a class="btn primary" href="#/puzzles">Puzzles ${icon('arrow')}</a>`}`;
   };
   $('.b-back').onclick = () => { if (i > 0) { i--; show(); } };

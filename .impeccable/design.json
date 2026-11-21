@@ -4,173 +4,530 @@
   "title": "Design System: Knight School",
   "extensions": {
     "colorMeta": {
-      "ink-0": { "role": "neutral", "displayName": "Aizome Night", "tonalRamp": ["#121A3A", "#1A2550", "#23305F", "#33427A", "#45558F", "#5E6B98", "#929CBE", "#DCE0EC"] },
-      "ink-1": { "role": "neutral", "displayName": "Aizome Deep", "tonalRamp": ["#121A3A", "#1A2550", "#23305F", "#33427A", "#45558F", "#5E6B98", "#929CBE", "#DCE0EC"] },
-      "ink-2": { "role": "neutral", "displayName": "Aizome Raised", "tonalRamp": ["#121A3A", "#1A2550", "#23305F", "#33427A", "#45558F", "#5E6B98", "#929CBE", "#DCE0EC"] },
-      "ink-3": { "role": "neutral", "displayName": "Aizome Rule", "tonalRamp": ["#121A3A", "#1A2550", "#23305F", "#33427A", "#45558F", "#5E6B98", "#929CBE", "#DCE0EC"] },
-      "ink-4": { "role": "neutral", "displayName": "Aizome Strong Rule", "tonalRamp": ["#121A3A", "#1A2550", "#23305F", "#33427A", "#45558F", "#5E6B98", "#929CBE", "#DCE0EC"] },
-      "canvas": { "role": "neutral", "displayName": "Gi Canvas", "tonalRamp": ["#2E2A22", "#4A4538", "#6B6553", "#8F8873", "#B3AC96", "#D2CCB9", "#E6E0D1", "#F1ECE0"] },
-      "canvas-ink": { "role": "neutral", "displayName": "Canvas Ink" },
-      "muted": { "role": "neutral", "displayName": "Faded Indigo" },
-      "seal": { "role": "primary", "displayName": "Vermilion Seal", "tonalRamp": ["#3A120B", "#6A2012", "#9A2E19", "#B5341D", "#CF3E24", "#E5482D", "#F08A76", "#FBD9D1"] },
-      "seal-hi": { "role": "primary", "displayName": "Pressed Seal" },
-      "seal-lo": { "role": "primary", "displayName": "Dried Seal" },
-      "good": { "role": "status", "displayName": "Moss" },
-      "bad": { "role": "status", "displayName": "Coral" },
-      "amber": { "role": "status", "displayName": "Amber" },
-      "board-slate": { "role": "board", "displayName": "Slate Square" },
-      "board-mist": { "role": "board", "displayName": "Mist Square" },
-      "belt-white": { "role": "rank-data", "displayName": "White Belt" },
-      "belt-yellow": { "role": "rank-data", "displayName": "Yellow Belt" },
-      "belt-orange": { "role": "rank-data", "displayName": "Orange Belt" },
-      "belt-green": { "role": "rank-data", "displayName": "Green Belt" },
-      "belt-blue": { "role": "rank-data", "displayName": "Blue Belt" },
-      "belt-purple": { "role": "rank-data", "displayName": "Purple Belt" },
-      "belt-brown": { "role": "rank-data", "displayName": "Brown Belt" },
-      "belt-black": { "role": "rank-data", "displayName": "Black Belt" },
-      "belt-bar-black": { "role": "rank-data", "displayName": "Rank Bar" },
-      "belt-bar-red": { "role": "rank-data", "displayName": "Black Belt Rank Bar" },
-      "belt-tape": { "role": "rank-data", "displayName": "Stripe Tape" },
-      "grade-best": { "role": "severity", "displayName": "Grade: Best" },
-      "grade-excellent": { "role": "severity", "displayName": "Grade: Excellent" },
-      "grade-good": { "role": "severity", "displayName": "Grade: Good" },
-      "grade-book": { "role": "severity", "displayName": "Grade: Book" },
-      "grade-blunder": { "role": "severity", "displayName": "Grade: Blunder (Crimson)" }
+      "slate-ground": {
+        "role": "neutral",
+        "displayName": "Slate Ground",
+        "tonalRamp": [
+          "#282725",
+          "#474440",
+          "#66625B",
+          "#867F75",
+          "#A19C95",
+          "#BCB9B4",
+          "#D7D5D3",
+          "#F3F2F2"
+        ]
+      },
+      "slate-rail": {
+        "role": "neutral",
+        "displayName": "Slate Rail",
+        "tonalRamp": [
+          "#272725",
+          "#464441",
+          "#65625C",
+          "#848077",
+          "#9F9C96",
+          "#BBB9B5",
+          "#D6D6D4",
+          "#F3F2F2"
+        ]
+      },
+      "slate-card": {
+        "role": "neutral",
+        "displayName": "Slate Card",
+        "tonalRamp": [
+          "#282625",
+          "#474340",
+          "#66615B",
+          "#867E76",
+          "#A19B95",
+          "#BBB8B5",
+          "#D7D5D3",
+          "#F3F2F2"
+        ]
+      },
+      "slate-raise": {
+        "role": "neutral",
+        "displayName": "Slate Raise",
+        "tonalRamp": [
+          "#282625",
+          "#464440",
+          "#66615B",
+          "#867F76",
+          "#A09C95",
+          "#BBB8B5",
+          "#D7D5D4",
+          "#F3F2F2"
+        ]
+      },
+      "slate-raise-hi": {
+        "role": "neutral",
+        "displayName": "Slate Raise Hi",
+        "tonalRamp": [
+          "#272625",
+          "#464441",
+          "#65615C",
+          "#847F77",
+          "#9F9B96",
+          "#BBB8B5",
+          "#D6D5D4",
+          "#F3F2F2"
+        ]
+      },
+      "slate-line": {
+        "role": "neutral",
+        "displayName": "Slate Line",
+        "tonalRamp": [
+          "#282625",
+          "#474340",
+          "#66615B",
+          "#867E75",
+          "#A19B95",
+          "#BBB8B4",
+          "#D7D5D3",
+          "#F3F2F2"
+        ]
+      },
+      "text-primary": {
+        "role": "neutral",
+        "displayName": "Text",
+        "tonalRamp": [
+          "#262626",
+          "#434343",
+          "#616161",
+          "#7E7E7E",
+          "#9B9B9B",
+          "#B8B8B8",
+          "#D5D5D5",
+          "#F2F2F2"
+        ]
+      },
+      "text-secondary": {
+        "role": "neutral",
+        "displayName": "Text Secondary",
+        "tonalRamp": [
+          "#272625",
+          "#464441",
+          "#65615C",
+          "#857F77",
+          "#A09C96",
+          "#BBB8B5",
+          "#D6D5D4",
+          "#F3F2F2"
+        ]
+      },
+      "text-tertiary": {
+        "role": "neutral",
+        "displayName": "Text Tertiary",
+        "tonalRamp": [
+          "#272625",
+          "#454442",
+          "#63615E",
+          "#827E79",
+          "#9E9B98",
+          "#BAB8B6",
+          "#D6D5D4",
+          "#F2F2F2"
+        ]
+      },
+      "move-green": {
+        "role": "primary",
+        "displayName": "Move Green",
+        "tonalRamp": [
+          "#26301D",
+          "#43582F",
+          "#61833E",
+          "#7EB249",
+          "#9BC076",
+          "#B8CEA2",
+          "#D5E0CB",
+          "#F2F5F0"
+        ]
+      },
+      "move-green-hi": {
+        "role": "primary",
+        "displayName": "Move Green Bright",
+        "tonalRamp": [
+          "#27301C",
+          "#455A2D",
+          "#63873B",
+          "#82B744",
+          "#9EC373",
+          "#BAD0A0",
+          "#D6E1CA",
+          "#F2F5F0"
+        ]
+      },
+      "move-green-edge": {
+        "role": "primary",
+        "displayName": "Move Green Edge",
+        "tonalRamp": [
+          "#212D1F",
+          "#395334",
+          "#4E7B46",
+          "#62A656",
+          "#88B77F",
+          "#ACC9A7",
+          "#D0DDCD",
+          "#F1F4F0"
+        ]
+      },
+      "move-green-ink": {
+        "role": "primary",
+        "displayName": "Move Green Ink",
+        "tonalRamp": [
+          "#24321B",
+          "#3F5D2A",
+          "#598C35",
+          "#72BF3C",
+          "#93C96D",
+          "#B3D39D",
+          "#D3E2C8",
+          "#F2F5EF"
+        ]
+      },
+      "loss-red": {
+        "role": "secondary",
+        "displayName": "Loss Red",
+        "tonalRamp": [
+          "#341919",
+          "#612726",
+          "#93302E",
+          "#CA3532",
+          "#D06866",
+          "#D89998",
+          "#E4C6C6",
+          "#F6EFEF"
+        ]
+      },
+      "loss-text": {
+        "role": "secondary",
+        "displayName": "Loss Text",
+        "tonalRamp": [
+          "#391614",
+          "#6C1F1B",
+          "#A5231C",
+          "#E62116",
+          "#E45A52",
+          "#E3918C",
+          "#EAC2C0",
+          "#F7EEED"
+        ]
+      },
+      "draw-grey": {
+        "role": "neutral",
+        "displayName": "Draw Grey",
+        "tonalRamp": [
+          "#272625",
+          "#454442",
+          "#63615E",
+          "#827E79",
+          "#9E9B98",
+          "#BAB8B6",
+          "#D6D5D4",
+          "#F2F2F2"
+        ]
+      },
+      "streak-amber": {
+        "role": "secondary",
+        "displayName": "Streak Amber",
+        "tonalRamp": [
+          "#3B2E12",
+          "#705417",
+          "#AC7D15",
+          "#F0A90B",
+          "#EBB94B",
+          "#E8CA88",
+          "#ECDEBE",
+          "#F8F4ED"
+        ]
+      },
+      "board-dark": {
+        "role": "neutral",
+        "displayName": "Board Dark",
+        "tonalRamp": [
+          "#262D20",
+          "#435135",
+          "#607849",
+          "#7DA25A",
+          "#9AB482",
+          "#B8C7A9",
+          "#D5DCCE",
+          "#F2F4F1"
+        ]
+      },
+      "board-light": {
+        "role": "neutral",
+        "displayName": "Board Light",
+        "tonalRamp": [
+          "#2F301D",
+          "#56582F",
+          "#81843E",
+          "#AFB349",
+          "#BDC076",
+          "#CDCEA2",
+          "#DFE0CA",
+          "#F5F5F0"
+        ]
+      },
+      "bubble-paper": {
+        "role": "neutral",
+        "displayName": "Bubble Paper",
+        "tonalRamp": [
+          "#262626",
+          "#434343",
+          "#616161",
+          "#7E7E7E",
+          "#9B9B9B",
+          "#B8B8B8",
+          "#D5D5D5",
+          "#F2F2F2"
+        ]
+      },
+      "bubble-ink": {
+        "role": "neutral",
+        "displayName": "Bubble Ink",
+        "tonalRamp": [
+          "#272725",
+          "#454541",
+          "#64645D",
+          "#838379",
+          "#9E9E97",
+          "#BABAB6",
+          "#D6D6D4",
+          "#F2F2F2"
+        ]
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Rank", "purpose": "The rank name on the coach home. Uppercase, condensed black." },
-      "headline": { "displayName": "Page title", "purpose": "Page titles. Uppercase, condensed." },
-      "title": { "displayName": "Section", "purpose": "Section and card headings. Uppercase, condensed." },
-      "numeral": { "displayName": "Figure", "purpose": "Stats, ratings, scores, step numbers. Condensed, tabular." },
-      "body": { "displayName": "Body", "purpose": "All reading text, about 68ch max." },
-      "label": { "displayName": "Label", "purpose": "Buttons, tabs, row titles. Normal width, sentence case." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "The main rating number only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card heads."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Coach text and descriptions, max 70ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Rating labels, field labels, row meta."
+      }
     },
     "shadows": [
-      { "name": "board-lift", "value": "0 12px 32px rgba(0,0,0,.5)", "purpose": "The chessboard only." },
-      { "name": "popover", "value": "0 18px 40px rgba(0,0,0,.5)", "purpose": "Settings popovers under the top bar." },
-      { "name": "sheet", "value": "0 22px 50px rgba(0,0,0,.55)", "purpose": "The floating coach chat panel." }
+      {
+        "name": "key-edge",
+        "value": "0 3px 0 #45753C",
+        "purpose": "Under green primary buttons only; 0 1px 0 on press."
+      },
+      {
+        "name": "floating-panel",
+        "value": "0 20px 50px rgba(0, 0, 0, .55)",
+        "purpose": "The Ask coach chat panel only."
+      }
     ],
     "motion": [
-      { "name": "ease", "value": "cubic-bezier(.16, 1, .3, 1)", "purpose": "Default ease-out for reveals, arrows and fills." },
-      { "name": "state", "value": "150ms", "purpose": "Colour and border transitions on controls and rows." },
-      { "name": "stripe-tape", "value": "tape .7s .5s ease both; scaleY(0) from top", "purpose": "A newly earned belt stripe tapes on." },
-      { "name": "belt-tie", "value": "tie 1.1s .15s ease both; clip-path inset(0 100% 0 0) to inset(0)", "purpose": "The hero belt ties on at promotion." },
-      { "name": "chat-rise", "value": "rise .35s ease; opacity 0 and translateY(14px) to rest", "purpose": "Coach chat panel opening." },
-      { "name": "reduced-motion", "value": "animation: none; transition: none", "purpose": "All motion off under prefers-reduced-motion." }
+      {
+        "name": "ease",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Goal bar fill, chat rise, eval bar, avatar hop."
+      },
+      {
+        "name": "state",
+        "value": ".15s",
+        "purpose": "Background and colour transitions on hover."
+      },
+      {
+        "name": "reduced",
+        "value": "none",
+        "purpose": "All animation and transition off under prefers-reduced-motion."
+      }
     ],
     "breakpoints": [
-      { "name": "dojo-stack", "value": "1000px" },
-      { "name": "phone", "value": "860px" },
-      { "name": "narrow", "value": "420px" }
-    ]
+      {
+        "name": "stack",
+        "value": "1100px"
+      },
+      {
+        "name": "tabbar",
+        "value": "900px"
+      },
+      {
+        "name": "compact",
+        "value": "480px"
+      }
+    ],
+    "moveGrades": {
+      "brilliant": {
+        "color": "#26C2A3",
+        "ink": "#0B2B24"
+      },
+      "great": {
+        "color": "#749BBF",
+        "ink": "#0F1B26"
+      },
+      "best": {
+        "color": "#81B64C",
+        "ink": "#13200A"
+      },
+      "excellent": {
+        "color": "#96BC4B",
+        "ink": "#13200A"
+      },
+      "good": {
+        "color": "#96AF8B",
+        "ink": "#13200A"
+      },
+      "book": {
+        "color": "#A88865",
+        "ink": "#1E150B"
+      },
+      "inaccuracy": {
+        "color": "#F7C045",
+        "ink": "#2A1F05"
+      },
+      "mistake": {
+        "color": "#FFA459",
+        "ink": "#2B1605"
+      },
+      "miss": {
+        "color": "#FF7769",
+        "ink": "#2B0B07"
+      },
+      "blunder": {
+        "color": "#CA3431",
+        "ink": "#FFFFFF"
+      }
+    }
   },
   "components": [
     {
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The seal: the one action the player should take next.",
-      "html": "<button class=\"ds-btn-primary\">Next puzzle <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></button>",
-      "css": ".ds-btn-primary { font: 600 .95rem/1.2 Archivo, system-ui, sans-serif; display: inline-flex; align-items: center; gap: .45em; padding: .62em 1.05em; border-radius: 8px; border: 1px solid #E5482D; background: #E5482D; color: #fff; cursor: pointer; transition: background-color .15s, border-color .15s, transform .1s; } .ds-btn-primary:hover { background: #CF3E24; border-color: #CF3E24; } .ds-btn-primary:active { background: #B5341D; transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 2px solid #F1ECE0; outline-offset: 2px; }"
+      "description": "The one green action per group, with a pressed-key bottom edge.",
+      "html": "<button class=\"ds-btn-primary\">Start</button>",
+      "css": ".ds-btn-primary{font:800 .95rem/1.2 \"Nunito Sans\",system-ui,sans-serif;border:0;border-radius:6px;padding:.62em 1.05em;background:var(--green,#81B64C);color:var(--green-ink,#13200A);box-shadow:0 3px 0 var(--green-edge,#45753C);cursor:pointer;transition:background-color .15s,transform .1s}.ds-btn-primary:hover{background:var(--green-hi,#95C45F)}.ds-btn-primary:active{box-shadow:0 1px 0 var(--green-edge,#45753C);transform:translateY(2px)}.ds-btn-primary:focus-visible{outline:2px solid var(--green-hi,#95C45F);outline-offset:2px}"
     },
     {
       "name": "Secondary Button",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Every other action: Hint, Solution, Back, Retry.",
-      "html": "<button class=\"ds-btn\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5\"/><path d=\"M9 18h6\"/><path d=\"M10 22h4\"/></svg> Hint</button>",
-      "css": ".ds-btn { font: 600 .95rem/1.2 Archivo, system-ui, sans-serif; display: inline-flex; align-items: center; gap: .45em; padding: .62em 1.05em; border-radius: 8px; border: 1px solid #33427A; background: #23305F; color: #F1ECE0; cursor: pointer; transition: background-color .15s, border-color .15s, transform .1s; } .ds-btn:hover { background: #33427A; border-color: #45558F; } .ds-btn:active { transform: translateY(1px); } .ds-btn:focus-visible { outline: 2px solid #F1ECE0; outline-offset: 2px; }"
+      "description": "Every other button: slate fill, white text.",
+      "html": "<button class=\"ds-btn\">Start</button>",
+      "css": ".ds-btn{font:700 .95rem/1.2 \"Nunito Sans\",system-ui,sans-serif;border:0;border-radius:6px;padding:.62em 1.05em;background:var(--raise,#3A3733);color:var(--text,#fff);cursor:pointer;transition:background-color .15s,transform .1s}.ds-btn:hover{background:var(--raise-hi,#45423E)}.ds-btn:active{transform:translateY(1px)}.ds-btn:focus-visible{outline:2px solid var(--green-hi,#95C45F);outline-offset:2px}"
+    },
+    {
+      "name": "Link Button",
+      "kind": "button",
+      "refersTo": "button-link",
+      "description": "Inline action such as Review.",
+      "html": "<button class=\"ds-btn-link\">Review</button>",
+      "css": ".ds-btn-link{font:700 .95rem/1.2 \"Nunito Sans\",system-ui,sans-serif;border:0;background:none;padding:.3em .2em;color:var(--green-hi,#95C45F);cursor:pointer}.ds-btn-link:hover{color:var(--text,#fff);text-decoration:underline}.ds-btn-link:focus-visible{outline:2px solid var(--green-hi,#95C45F);outline-offset:2px}"
     },
     {
       "name": "Text Input",
       "kind": "input",
       "refersTo": "input",
-      "description": "Indigo well with a vermilion caret.",
-      "html": "<input class=\"ds-input\" placeholder=\"Your username\">",
-      "css": ".ds-input { font: 400 16px/1.55 Archivo, system-ui, sans-serif; background: #121A3A; color: #F1ECE0; border: 1px solid #33427A; border-radius: 8px; padding: .6em .8em; caret-color: #E5482D; } .ds-input::placeholder { color: #8890AD; } .ds-input:focus { border-color: #45558F; } .ds-input:focus-visible { outline: 2px solid #F1ECE0; outline-offset: 2px; }"
+      "description": "Recessed field on ground slate.",
+      "html": "<input class=\"ds-input\" placeholder=\"chess.com username\">",
+      "css": ".ds-input{font:400 16px/1.5 \"Nunito Sans\",system-ui,sans-serif;background:var(--bg,#262421);color:var(--text,#fff);border:1px solid var(--line,#403C38);border-radius:6px;padding:.6em .8em;caret-color:var(--green,#81B64C)}.ds-input::placeholder{color:var(--text-3,#A19E9A)}.ds-input:focus{border-color:var(--text-3,#A19E9A);outline:none}"
     },
     {
-      "name": "Top Navigation",
+      "name": "Sidebar Nav",
       "kind": "nav",
-      "refersTo": "top-bar",
-      "description": "Tabs with Lucide icons; active tab underlined in canvas.",
-      "html": "<nav class=\"ds-nav\"><a class=\"on\" href=\"#\">Coach</a><a href=\"#\">Learn</a><a href=\"#\">Puzzles</a><a href=\"#\">Review</a></nav>",
-      "css": ".ds-nav { display: flex; gap: .2rem; height: 62px; background: #1A2550; border-bottom: 1px solid #33427A; padding: 0 1.25rem; font: 600 .95rem/1 Archivo, system-ui, sans-serif; } .ds-nav a { display: flex; align-items: center; padding: 0 .85rem; color: #A3AAC4; text-decoration: none; transition: color .15s, box-shadow .15s; } .ds-nav a:hover { color: #F1ECE0; } .ds-nav a.on { color: #F1ECE0; box-shadow: inset 0 -3px 0 #F1ECE0; } .ds-nav a:focus-visible { outline: 2px solid #F1ECE0; outline-offset: 2px; }"
+      "refersTo": "nav-item-active",
+      "description": "Sidebar items with Lucide icons; active gets a card fill.",
+      "html": "<nav class=\"ds-nav\"><a class=\"on\" href=\"#\"><svg viewBox=\"0 0 24 24\"><path d=\"M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/></svg>Coach</a><a href=\"#\"><svg viewBox=\"0 0 24 24\"><path d=\"M2 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H2zM22 4h-7a3 3 0 0 0-3 3v14a2 2 0 0 1 2-2h8z\"/></svg>Learn</a></nav>",
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:.15rem;background:var(--rail,#1F1E1C);padding:1rem .75rem;width:224px}.ds-nav a{display:flex;align-items:center;gap:.75rem;padding:.62rem .7rem;border-radius:8px;color:var(--text-2,#C3C0BC);font:700 1rem \"Nunito Sans\",system-ui,sans-serif;text-decoration:none}.ds-nav svg{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ds-nav a:hover{background:rgba(255,255,255,.05);color:var(--text,#fff)}.ds-nav a.on{background:var(--card,#312E2B);color:var(--text,#fff)}"
     },
     {
-      "name": "Filter Chip",
+      "name": "Chip",
       "kind": "chip",
       "refersTo": "chip",
-      "description": "Pill filter; active state is canvas, never seal.",
-      "html": "<div class=\"ds-chips\"><button class=\"ds-chip on\">Forks</button><button class=\"ds-chip\">Pins</button></div>",
-      "css": ".ds-chips { display: flex; gap: .35rem; } .ds-chip { font: 600 .84rem/1.2 Archivo, system-ui, sans-serif; padding: .38em .8em; border-radius: 999px; border: 1px solid #33427A; background: #23305F; color: #F1ECE0; cursor: pointer; } .ds-chip:hover { background: #33427A; border-color: #45558F; } .ds-chip.on { background: #F1ECE0; border-color: #F1ECE0; color: #1B2033; } .ds-chip:focus-visible { outline: 2px solid #F1ECE0; outline-offset: 2px; }"
+      "description": "Filter chips; the active one inverts to white.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip on\">All</button><button class=\"ds-chip\">Forks</button></div>",
+      "css": ".ds-chips{display:flex;gap:.35rem}.ds-chip{font:700 .84rem/1.2 \"Nunito Sans\",system-ui,sans-serif;border:0;border-radius:999px;padding:.38em .8em;background:var(--raise,#3A3733);color:var(--text,#fff);cursor:pointer}.ds-chip:hover{background:var(--raise-hi,#45423E)}.ds-chip.on{background:var(--text,#fff);color:var(--bg,#262421)}"
     },
     {
-      "name": "Belt",
-      "kind": "custom",
-      "refersTo": "rank-card",
-      "description": "Signature: cloth band in the belt hue, rank bar with four tape stripes; earned stripes are solid.",
-      "html": "<div class=\"ds-rank\"><h2 class=\"ds-rankname\">Yellow belt</h2><svg class=\"ds-belt\" viewBox=\"0 0 320 34\" preserveAspectRatio=\"none\" role=\"img\" aria-label=\"Yellow belt, 1 of 4 stripes\"><rect width=\"320\" height=\"34\" fill=\"#F2C230\"/><rect y=\"7.48\" width=\"320\" height=\"1\" fill=\"rgba(0,0,0,.28)\"/><rect y=\"25.52\" width=\"320\" height=\"1\" fill=\"rgba(0,0,0,.28)\"/><rect x=\"204.8\" width=\"76.8\" height=\"34\" fill=\"#16161A\"/><rect class=\"tape on\" x=\"266.94\" width=\"6.98\" height=\"34\" fill=\"#F4F1EA\"/><rect class=\"tape\" x=\"252.28\" width=\"6.98\" height=\"34\" fill=\"#F4F1EA\"/><rect class=\"tape\" x=\"237.62\" width=\"6.98\" height=\"34\" fill=\"#F4F1EA\"/><rect class=\"tape\" x=\"222.96\" width=\"6.98\" height=\"34\" fill=\"#F4F1EA\"/></svg></div>",
-      "css": ".ds-rank { background: #1A2550; border: 1px solid #33427A; border-radius: 14px; padding: 1.8rem; color: #F1ECE0; } .ds-rankname { margin: 0; font: 900 3rem/.86 Archivo, system-ui, sans-serif; font-stretch: 62%; text-transform: uppercase; letter-spacing: -.01em; } .ds-belt { display: block; width: 100%; height: 46px; margin-top: 1.5rem; border-radius: 3px; animation: ds-tie 1.1s .15s cubic-bezier(.16,1,.3,1) both; } .ds-belt .tape { fill-opacity: .16; } .ds-belt .tape.on { fill-opacity: 1; transform-box: fill-box; transform-origin: 50% 0; animation: ds-tape .7s .5s cubic-bezier(.16,1,.3,1) both; } @keyframes ds-tape { from { transform: scaleY(0); } } @keyframes ds-tie { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } } @media (prefers-reduced-motion: reduce) { .ds-belt, .ds-belt .tape.on { animation: none; } }"
+      "name": "Game Row Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Card with recent-game rows: result badge, opponent, delta, Review link.",
+      "html": "<div class=\"ds-card\"><b class=\"ds-h\">Recent games</b><div class=\"ds-row\"><span class=\"ds-res w\">W</span><span>fabietto1 <small>(788)</small></span><span class=\"up\">+8</span><a href=\"#\">Review</a></div><div class=\"ds-row\"><span class=\"ds-res l\">L</span><span>Nixkram <small>(2290)</small></span><span class=\"dn\">-8</span><a href=\"#\">Review</a></div></div>",
+      "css": ".ds-card{background:var(--card,#312E2B);border-radius:10px;padding:1.1rem 1.25rem;color:var(--text,#fff);font:400 16px/1.5 \"Nunito Sans\",system-ui,sans-serif;max-width:420px}.ds-h{font-weight:800;font-size:1.08rem}.ds-row{display:grid;grid-template-columns:28px 1fr 40px auto;gap:.75rem;align-items:center;padding:.55rem 0;border-top:1px solid var(--line,#403C38)}.ds-h+.ds-row{border-top:0}.ds-row small{color:var(--text-3,#A19E9A)}.ds-res{display:grid;place-items:center;width:26px;height:26px;border-radius:6px;font-weight:800;font-size:.8rem}.ds-res.w{background:#81B64C;color:#13200A}.ds-res.l{background:#CA3431;color:#fff}.up{color:#95C45F;font-weight:800}.dn{color:#F2766F;font-weight:800}.ds-row a{color:#95C45F;font-weight:700;text-decoration:none}.ds-row a:hover{color:#fff;text-decoration:underline}"
     },
     {
-      "name": "Stripe Checklist Row",
+      "name": "Next-Goal Bar",
       "kind": "custom",
-      "refersTo": "panel",
-      "description": "One requirement toward the next belt: tick, label, Go.",
-      "html": "<ul class=\"ds-stripes\"><li class=\"ok\"><span class=\"tick\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg></span><span class=\"lbl\">Lesson: Piece values</span><span class=\"done\">Earned</span></li><li><span class=\"tick\"></span><span class=\"lbl\">Solve 25 puzzles<small>7 / 25</small></span><a class=\"go\" href=\"#\">Go</a></li></ul>",
-      "css": ".ds-stripes { list-style: none; margin: 0; padding: 0; font: 400 16px/1.55 Archivo, system-ui, sans-serif; color: #F1ECE0; background: #1A2550; } .ds-stripes li { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: .8rem; padding: .7rem 0; border-top: 1px solid #33427A; } .ds-stripes .tick { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #23305F; color: #7D86A6; } .ds-stripes li.ok .tick { background: #F1ECE0; color: #1B2033; } .ds-stripes .lbl { font-weight: 600; } .ds-stripes li.ok .lbl, .ds-stripes .done { color: #A3AAC4; } .ds-stripes small { display: block; color: #A3AAC4; font-weight: 500; font-size: .84rem; } .ds-stripes .go { font: 600 .85rem/1.2 Archivo, system-ui, sans-serif; padding: .42em .75em; border-radius: 8px; background: #E5482D; color: #fff; text-decoration: none; } .ds-stripes .go:hover { background: #CF3E24; } .ds-stripes .go:focus-visible { outline: 2px solid #F1ECE0; outline-offset: 2px; }"
-    },
-    {
-      "name": "Move-Grade Badges",
-      "kind": "custom",
-      "description": "Severity scale: canvas and cool indigo for good moves, amber to crimson for problems; icons from Lucide.",
-      "html": "<div class=\"ds-grades\"><i style=\"background:#F1ECE0;color:#1B2033\">!!</i><i style=\"background:#DCE0EC;color:#1B2033\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M11.53 2.3a.53.53 0 0 1 .94 0l2.31 4.68a2.12 2.12 0 0 0 1.6 1.16l5.16.76a.53.53 0 0 1 .3.9l-3.74 3.64a2.12 2.12 0 0 0-.61 1.88l.88 5.14a.53.53 0 0 1-.77.56l-4.62-2.43a2.12 2.12 0 0 0-1.97 0L6.4 21.01a.53.53 0 0 1-.77-.56l.88-5.14a2.12 2.12 0 0 0-.61-1.88L2.16 9.79a.53.53 0 0 1 .3-.9l5.16-.76a2.12 2.12 0 0 0 1.6-1.16z\"/></svg></i><i style=\"background:#929CBE;color:#1B2033\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg></i><i style=\"background:#F2B04A;color:#1B2033\">?!</i><i style=\"background:#FF8A78;color:#1B2033\">?</i><i style=\"background:#C9455A;color:#fff\">??</i></div>",
-      "css": ".ds-grades { display: flex; gap: .5rem; padding: .8rem; background: #1A2550; } .ds-grades i { display: inline-grid; place-items: center; min-width: 1.6em; height: 1.6em; padding: 0 .15em; border-radius: 50%; font: normal 850 .72rem/1 Archivo, system-ui, sans-serif; } .ds-grades svg { width: 1.05em; height: 1.05em; }"
+      "refersTo": "goal-bar",
+      "description": "Signature: the progress bar to your next rating goal under the Elo.",
+      "html": "<div class=\"ds-goal\"><div class=\"ds-gh\"><span>Next goal: <b>1800</b></span><span class=\"t\">91 to go</span></div><div class=\"ds-bar\"><i style=\"width:18%\"></i></div><div class=\"ds-gf\"><span>1700</span><span>1800</span></div></div>",
+      "css": ".ds-goal{background:var(--card,#312E2B);padding:1rem;border-radius:10px;color:var(--text,#fff);font:700 1rem \"Nunito Sans\",system-ui,sans-serif;width:360px}.ds-gh{display:flex;justify-content:space-between;margin-bottom:.4rem}.ds-gh b{font-weight:800}.ds-gh .t,.ds-gf{color:var(--text-3,#A19E9A);font-weight:400;font-size:.8rem}.ds-bar{height:10px;background:var(--bg,#262421);border-radius:5px;overflow:hidden}.ds-bar i{display:block;height:100%;background:var(--green,#81B64C);border-radius:5px;transition:width .8s cubic-bezier(.16,1,.3,1)}.ds-gf{display:flex;justify-content:space-between;margin-top:.35rem}"
     },
     {
       "name": "Coach Bubble",
-      "kind": "card",
+      "kind": "custom",
       "refersTo": "coach-bubble",
-      "description": "Coach Knox speaks on gi canvas; speaker name condensed uppercase.",
-      "html": "<div class=\"ds-coach\"><span class=\"av\"></span><div class=\"ds-bubble\"><span class=\"who\">Coach Knox</span>Promotion! You earned your Yellow belt.</div></div>",
-      "css": ".ds-coach { display: flex; gap: .75rem; align-items: flex-start; padding: 1rem; background: #121A3A; } .ds-coach .av { flex: none; width: 52px; height: 52px; border-radius: 50%; background: #F1ECE0; } .ds-bubble { flex: 1; background: #F1ECE0; color: #1B2033; border-radius: 14px; border-top-left-radius: 4px; padding: .75rem 1rem .85rem; font: 400 16px/1.5 Archivo, system-ui, sans-serif; } .ds-bubble .who { display: block; font: 800 .78rem/1.2 Archivo, system-ui, sans-serif; font-stretch: 62%; text-transform: uppercase; letter-spacing: .04em; color: #5A6385; margin-bottom: .15rem; }"
+      "description": "Coach Knox speaking from a white bubble beside his knight avatar.",
+      "html": "<div class=\"ds-coach\"><div class=\"ds-av\"><img src=\"img/knight.svg\" alt=\"\"></div><div class=\"ds-bub\"><b>Coach Knox</b>You are 91 points from 1800.</div></div>",
+      "css": ".ds-coach{display:flex;gap:.75rem;align-items:flex-start;font:400 16px/1.5 \"Nunito Sans\",system-ui,sans-serif;max-width:420px}.ds-av{flex:none;width:48px;height:48px;border-radius:8px;background:#fff;display:grid;place-items:center}.ds-av img{width:38px;height:38px}.ds-bub{position:relative;background:#fff;color:#1A1A18;border-radius:10px;padding:.7rem .95rem .8rem}.ds-bub::before{content:\"\";position:absolute;left:-7px;top:16px;border:7px solid transparent;border-left:0;border-right-color:#fff}.ds-bub b{display:block;font-weight:800;font-size:.78rem;color:#5C5A57}"
     }
   ],
   "narrative": {
-    "northStar": "The Dojo",
-    "overview": "Knight School is a kendo hall at night: deep aizome-indigo floors, gi-canvas cloth for anything the coach says, and a single vermilion seal stamped only where the player is meant to act. Your level is a belt you are earning, and every screen keeps that belt and its next stripe within reach. The system refuses the category default of a brown-and-green dashboard of equal stat tiles; rank is told as one heavy belt with a checklist, and stats sit in a quiet ruled list beside it.\n\nDensity is moderate and calm. Flat panels of indigo step up by tone rather than by shadow, ruled with hairlines one step lighter. Type is a single variable family, Archivo, pulled to condensed black for ranks, headings and numbers, and left at normal width for everything the player reads or clicks. Colour is rationed: indigo and canvas carry the whole interface, vermilion means \"do this\", amber-to-crimson means \"this went wrong\", and belt hues appear only where they report a rank.",
+    "northStar": "The Club Room After Hours",
+    "overview": "Knight School wears the category standard on purpose: the dark warm slate, left sidebar and bright green action that every serious chess site player already reads without thinking. The owner chose this canon over invented worlds, so the craft lives in execution, not novelty: tight card rhythm, tabular numbers, honest win/loss colour, one green button where the eye should go. It is personal rather than decorative; the screen is your real Elo, your games and Coach Knox's plan, nothing staged.\n\nDensity is medium-high, like a dashboard you check daily. Surfaces are flat tonal layers of one warm slate family; the only lift in the whole system is the green primary button's pressed-key bottom edge and the floating chat panel. Coach Knox speaks from a white paper bubble, the one light surface, so his voice reads as a person on a dark board.\n\nThe world refuses invented rank systems, belts, mascots-as-decoration and any copy of chess.com's name, logo or artwork. It borrows the category's grammar, never its brand.",
     "keyCharacteristics": [
-      "Indigo ink ramp ground, gi-canvas text and coach surfaces, flat colour throughout.",
-      "One vermilion seal colour, for actions only.",
-      "Condensed black uppercase Archivo for rank, headings and figures; normal width for UI.",
-      "The belt is the signature: stripes tape on when earned, the belt ties on at promotion.",
-      "Board squares in cool slate and mist, so the board belongs to the same night."
+      "Warm near-black slate in three tonal steps (ground, rail, card) with no borders between cards.",
+      "One bright green primary per group, with a darker green bottom edge that depresses on press.",
+      "Nunito Sans at 700 to 800 for anything you scan; tabular numerals everywhere.",
+      "Result states as colour: win green, loss red, draw grey, in small square badges.",
+      "The classic green and cream board with a yellow last-move tint.",
+      "Lucide line icons only; chess notation (!!, ??, ?!) is text."
     ],
     "rules": [
-      { "name": "The Seal Rule", "body": "Vermilion means \"act here\". It never decorates, never marks status, never fills a chart, and selected or active states use canvas, not seal.", "section": "colors" },
-      { "name": "The Belt-Is-Data Rule", "body": "A belt hue appears only when it reports a rank. No yellow headings, no green success states borrowed from the belts.", "section": "colors" },
-      { "name": "The Warm-Means-Wrong Rule", "body": "Amber, coral and crimson are the error side of the severity scale. Good outcomes stay in canvas and cool indigo.", "section": "colors" },
-      { "name": "The Two-Widths Rule", "body": "Condensed is for rank, headings and numbers only. Anything the player reads as a sentence or clicks as a control is normal width.", "section": "typography" },
-      { "name": "The Flat Cloth Rule", "body": "Surfaces are flat indigo at rest. No gradients, no glows, no coloured shadows; a shadow means the element floats.", "section": "elevation" }
+      {
+        "name": "The One Green Rule",
+        "body": "Each group (a card, a plan list, a dialog) has at most one green primary button. In Today's plan only the first open item's Start is green; the rest are slate.",
+        "section": "colors"
+      },
+      {
+        "name": "The Result Means It Rule",
+        "body": "Green, red and grey are reserved for win, loss and draw (and the matching move grades). Never use loss red for decoration or green for a non-action.",
+        "section": "colors"
+      },
+      {
+        "name": "The Weight Not Size Rule",
+        "body": "Row titles and buttons are 700; headings and numbers are 800. Hierarchy inside a card comes from weight and grey level, not from new sizes.",
+        "section": "typography"
+      },
+      {
+        "name": "The Only Lift Rule",
+        "body": "Nothing else gets a shadow. A new card that wants to stand out gets the green-edge outline (1px #45753C) like the sign-in card, not elevation.",
+        "section": "elevation"
+      }
     ],
     "dos": [
-      "Do keep the ground in the indigo ramp (ink-0 to ink-4) and set text in Gi Canvas.",
-      "Do use Vermilion Seal (#E5482D) only on actions, with hover #CF3E24.",
-      "Do show belt hues only as rank data: the belt, its swatch, the belt chip.",
-      "Do use Archivo condensed (wdth 62) black uppercase for rank, headings and numbers, normal width for UI.",
-      "Do draw every icon from the Lucide set in js/icons.js: inline SVG, currentColor stroke, stroke-width 2, round caps and joins.",
-      "Do colour move grades on the ink-to-canvas / amber-to-crimson severity scale.",
-      "Do keep board highlights as indigo tints on slate and mist squares.",
-      "Do honour reduced motion: all animations and transitions switch off."
+      "Do keep one green primary per group; every other button in that group is Slate Raise or a link.",
+      "Do put dark ink (#13200A) on green fills and use Loss Text (#F2766F), not Loss Red, for red text on slate.",
+      "Do use Lucide inline SVG icons at 1.15em with a 2px round stroke.",
+      "Do write chess notation (!!, !, ?!, ?, ??) as text, and give each grade badge its own ink colour for contrast.",
+      "Do disable hover fills on touch screens under `(hover: none)` so no fill stays stuck after a tap.",
+      "Do step surfaces by tone (rail, ground, card, raise) instead of adding borders or shadows."
     ],
     "donts": [
-      "Don't use gradients or glows on interface surfaces. (The board's checker pattern and move-target dots are drawn with CSS gradients as a rendering technique; that is not a decorative gradient.)",
+      "Don't copy chess.com's name, logo or any of its assets; the category look is shared, the brand is not.",
       "Don't use emoji or Unicode glyphs as icons.",
-      "Don't put seal on status, selection, active tabs, active chips or charts.",
-      "Don't borrow a belt colour for headings, success states or accents.",
-      "Don't lay stats out as a row of equal tiles; they live in a ruled list.",
-      "Don't add shadows to resting panels."
+      "Don't invent rank systems, belts or decorative worlds; ratings are the player's real chess.com Elo.",
+      "Don't add shadows beyond the primary key edge and the floating chat panel.",
+      "Don't use green, red or grey for anything that is not an action or a win, loss or draw."
     ]
   }
 }

@@ -12,14 +12,14 @@ export function initSyncPanel(button, panel, onRemoteChange) {
   let msg = '';
   function render() {
     const s = state();
-    button.classList.toggle('off', !s.code);
-    button.classList.toggle('warn', !!(s.code && s.error));
+    button?.classList.toggle('off', !s.code);
+    button?.classList.toggle('warn', !!(s.code && s.error));
     panel.innerHTML = s.code ? `
       <h3>Sync is on</h3>
       <p class="vhint">Your progress is saved online and shared with every device that uses this code:</p>
       <div class="code">${pretty(s.code)}</div>
       <button class="s-copy">Copy code</button>
-      <p class="vhint">On your other device, open Knight School, tap the cloud button, choose <b>I have a code</b> and enter it. Keep the code private, it's the key to your progress.</p>
+      <p class="vhint">On your other device, open Knight School, go to <b>Settings</b>, choose <b>I have a code</b> and enter it. Keep the code private, it's the key to your progress.</p>
       <p class="vhint">Last synced: ${ago(s.at)}${s.error ? ` · <span class="err">Problem: ${esc(s.error)}</span>` : ''}</p>
       <div class="row"><button class="s-now primary">Sync now</button><button class="s-off">Turn off here</button></div>`
     : `
@@ -45,8 +45,10 @@ export function initSyncPanel(button, panel, onRemoteChange) {
       leave(); msg = 'Sync is off on this device.'; render();
     });
   }
-  button.onclick = () => { panel.hidden = !panel.hidden; msg = ''; if (!panel.hidden) render(); };
-  document.addEventListener('click', e => { if (!panel.hidden && !panel.contains(e.target) && !button.contains(e.target)) panel.hidden = true; });
+  if (button) { // popover mode; without a button it renders in place (the Settings page)
+    button.onclick = () => { panel.hidden = !panel.hidden; msg = ''; if (!panel.hidden) render(); };
+    document.addEventListener('click', e => { if (!panel.hidden && !panel.contains(e.target) && !button.contains(e.target)) panel.hidden = true; });
+  }
   render();
   return render;
 }

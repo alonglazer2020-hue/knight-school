@@ -1,13 +1,16 @@
 // Coach Knox: the speech bubble, the voice (Web Speech API) and synthesized sound effects (Web Audio).
 import * as store from './store.js';
 import { AI_VOICES, ensureVoice, synth } from './voice-ai.js';
+import { KOKORO_VOICES, ensureKokoro, synthKokoro } from './voice-kokoro.js';
 import { icon } from './icons.js';
 
 let box = null;
 let lastText = '';
+const DEFAULT_VOICE = 'ko:af_heart';
+if (!store.get('voiceV2', false)) { store.set('voiceName', DEFAULT_VOICE); store.set('voiceV2', true); } // one-time move to the natural voices
 export const settings = {
   sound: store.get('sound', true), voice: store.get('voice', true),
-  voiceName: /^(ai|br):/.test(store.get('voiceName', '')) ? store.get('voiceName') : 'ai:en_US-ryan-medium',
+  voiceName: /^(ko|ai|br):/.test(store.get('voiceName', '')) ? store.get('voiceName') : DEFAULT_VOICE,
   rate: store.get('rate', 1),
 };
 
@@ -84,7 +87,8 @@ export function speak(text) {
   if (!settings.voice || !text) return;
   hush();
   const my = ++token;
-  if (settings.voiceName.startsWith('ai:')) speakAI(spoken(text), settings.voiceName.slice(3), my);
+  if (settings.voiceName.startsWith('ko:')) speakAI(spoken(text), settings.voiceName.slice(3), my, KOKORO);
+  else if (settings.voiceName.startsWith('ai:')) speakAI(spoken(text), settings.voiceName.slice(3), my);
   else speakBrowser(spoken(text));
 }
 
@@ -97,24 +101,33 @@ function speakBrowser(text) {
   speechSynthesis.speak(u);
 }
 
-async function speakAI(text, id, my) {
+const PIPER = { ensure: ensureVoice, synth };
+const KOKORO = { ensure: (id, p) => ensureKokoro(p), synth: synthKokoro };
+export { KOKORO_VOICES };
+
+async function speakAI(text, id, my, eng = PIPER) {
   try {
-    await ensureVoice(id, p => voiceStatus(`Downloading the coach's voice… ${Math.round(p * 100)}% (one time only)`));
+    await eng.ensure(id, p => voiceStatus(`Downloading the coach's voice… ${Math.round(p * 100)}% (one time only)`));
     voiceStatus('');
     // Speak sentence by sentence, generating the next one while the current one plays.
     const parts = text.match(/[^.!?]+[.!?]*/g)?.map(s => s.trim()).filter(Boolean) ?? [text];
-    let next = synth(parts[0], id);
+    let next = eng.synth(parts[0], id);
     for (let i = 0; i < parts.length; i++) {
       const blob = await next;
       if (my !== token) return;
-      if (i + 1 < parts.length) next = synth(parts[i + 1], id);
+      if (i + 1 < parts.length) next = eng.synth(parts[i + 1], id);
       await play(blob, my);
       if (my !== token) return;
     }
   } catch (e) {
+    if (my !== token) return;
+    if (eng === KOKORO) { // too heavy for this device or offline: try the lighter AI voice before the browser's
+      console.warn('Natural voice failed, trying the lighter AI voice', e);
+      return speakAI(text, 'en_US-ryan-medium', my, PIPER);
+    }
     console.warn('AI voice failed, using the browser voice', e);
     voiceStatus("Couldn't load the AI voice (check your internet). Using the browser voice for now.");
-    if (my === token) speakBrowser(text);
+    speakBrowser(text);
   }
 }
 

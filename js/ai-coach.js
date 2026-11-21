@@ -10,7 +10,8 @@ import { THEMES, mistakes } from './puzzles.js';
 import { Chess } from '../vendor/chess.js';
 import { toMoveArg } from './chessutil.js';
 import { icon } from './icons.js';
-import { rank } from './belts.js';
+import { level } from './levels.js';
+import { account, stats, games as ccGames } from './chesscom.js';
 
 const API = 'https://generativelanguage.googleapis.com/v1beta/models';
 // shortcut: Google renames models every few months; aliases first, then pinned names. Update this list if all of them 404.
@@ -38,10 +39,16 @@ function profile() {
   const L = [];
   const revs = store.get('reviews', []).slice(0, 8).map(r => store.get('rv.' + r.key, null)).filter(Boolean);
   const elo = revs.map(R => (R.myColor === 'w' ? R.wr : R.br)).find(Boolean);
-  L.push(`Username: ${store.get('username', '') || 'not set'} (plays on ${store.get('source', 'chesscom') === 'lichess' ? 'Lichess' : 'chess.com'}).`);
-  const rk = rank();
-  L.push(`Knight School belt: ${rk.belt.name}${rk.next ? `; working toward ${rk.next.name}, still needs: ${rk.stripes.filter(x => !x.ok).map(x => x.label).join(', ')}` : ''}.`);
-  L.push(`Game rating: ${elo ?? 'unknown (no games reviewed yet)'}. Puzzle rating on Knight School: ${Math.round(store.get('prating', 800))}.`);
+  const acc = account(), cs = stats(), lv = level();
+  if (acc && cs) {
+    L.push(`Signed in with chess.com as ${acc.username}. Ratings: ${['rapid', 'blitz', 'bullet', 'daily'].filter(t => cs[t]?.r).map(t => `${t} ${cs[t].r} (best ${cs[t].best}, record ${cs[t].w}W ${cs[t].l}L ${cs[t].d}D)`).join('; ')}${cs.puzzles ? `; chess.com puzzles best ${cs.puzzles}` : ''}.`);
+    L.push(`Main time control: ${lv.tc}, ${lv.rating} Elo (${lv.delta >= 0 ? '+' : ''}${lv.delta} in 30 days). Next goal ${lv.goal} (${lv.toGo} to go). At this level the focus is: ${lv.band.focus}.`);
+    const recent = ccGames().slice(0, 15);
+    if (recent.length) L.push(`Last ${recent.length} chess.com games (newest first): ${recent.map(g => `${g.res} vs ${g.opp} (${g.oppR}) ${g.tc}${g.open ? ', ' + g.open : ''}, ${g.how}`).join('; ')}.`);
+  } else {
+    L.push(`Not signed in with chess.com. Game rating seen in reviews: ${elo ?? 'unknown'}.`);
+  }
+  L.push(`Puzzle rating on Knight School: ${Math.round(store.get('prating', 800))}.`);
   const pst = store.get('pstats', { solved: 0, failed: 0, byTheme: {} });
   const badThemes = Object.entries(pst.byTheme ?? {}).filter(([, b]) => b.f > b.s).map(([t]) => THEMES[t]?.label ?? t);
   L.push(`Puzzles: ${pst.solved} solved, ${pst.failed} failed${badThemes.length ? `; struggles with: ${badThemes.join(', ')}` : ''}.`);

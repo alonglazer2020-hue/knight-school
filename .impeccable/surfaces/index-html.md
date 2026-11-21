@@ -7,15 +7,15 @@ related_targets: ["style.css"]
 
 # Knight School app shell (all routes)
 
-Scope: the whole app shell and every route (Coach home, Learn, lesson, Puzzles, Review, AI chat). Visitor mode: Operate.
-Audience/job: one improving player, evening after a chess.com game, PC then phone; review the game, fix mistakes, train the weak spot, know their level.
-Constraints: static site, standard web controls, chessground board, everything free. Owner asked for unattended work: no decision round was served; the assigned direction was taken as the build (disclosed to the owner).
+Scope: the whole app shell and every route (Coach home, Learn, lesson, Puzzles, Review, Settings, AI chat). Visitor mode: Operate.
+Audience/job: one improving player, evening after a chess.com game, PC then phone; signed in with their chess.com username; sees their Elo, reviews games, fixes mistakes, trains the weak spot.
+Constraints: static site, standard web controls, chessground board, free. Never copy chess.com's name, logo or assets. Never ask for a chess.com password.
 
 ## Direction contract
 
-THESIS: Your level is a belt you are earning, and the coach runs the dojo. Refuses the category default: chess.com's brown-and-green dashboard of equal stat tiles.
-OWN-WORLD: Kendo-indigo ground (deep ink-indigo panels, never brown), gi-canvas off-white type, one vermilion seal colour reserved strictly for actions, belt colours (white, yellow, orange, green, blue, purple, brown, black) used only as rank data. Flat colour, no gradients or glows. Archivo: condensed black for ranks and numbers, normal width for UI. Board in cool slate-and-mist squares.
-STORY: The player sees their belt and exactly which stripes earn the next one, hears/reads Coach Knox, does today's session, and leaves knowing their level and next step.
-FIRST VIEWPORT: Top bar (logo, Coach/Learn/Puzzles/Review, belt chip, Ask coach, settings icons; bottom tab bar on phones). Coach home: left, the belt hero at full width of the column (belt bar with stripe tabs, rank name large, next-belt requirements as checklist rows with Go buttons); right, Coach Knox card and stats; below, today's session and what I've noticed.
-FORM: assigned direction, candidate 7 of 7 (martial-arts dojo belt ranking system); seed:948cbdee1b9a3e94. Raises: action colour reserved for pressable things (from warm consumer app surface); flat unmodulated colour, no gradients (from zoo guide map). Signature move: the belt, with stripes taped on when earned.
+THESIS: The familiar chess-site layout, executed at full craft and made personal: your real chess.com Elo, your games and Coach Knox's plan on one screen. Refuses invented rank systems and decorative worlds; the owner chose the category standard (canon) over four original directions.
+OWN-WORLD: Dark warm slate ground #262421, sidebar #1F1E1C, cards #312E2B with 10px radius, text #FFFFFF / #B3B0AD, bright green #81B64C for primary actions with dark ink text (contrast), a darker green bottom edge on primary buttons. Nunito Sans 400–800. Win green / loss red / draw grey as result states. Board in the classic green-and-cream palette.
+STORY: Sign in with a chess.com username; see your Elo, its 30-game trend and the next goal; read Coach Knox; work through today's plan; open any recent game for review.
+FIRST VIEWPORT: Left sidebar (logo, Coach / Learn / Puzzles / Review / Settings, account chip at the bottom; bottom tab bar on phones). Coach home: welcome header with connected pill and last-synced time; ratings card (main Elo, trend line, delta, other ratings, next-goal bar); Coach Knox card with Ask coach; Today's plan with Start buttons (first one green); Recent games with Review links. Signed out: a chess.com sign-in card leads.
+FORM: canon (the category standard, chosen by the owner over the roll); seed:90a9ca77e57d3114. Signature move: the next-goal bar under your Elo, the one place progress is drawn.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

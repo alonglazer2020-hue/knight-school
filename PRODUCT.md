@@ -29,7 +29,7 @@ Everything a paid coach-and-course stack does, free and personal: the coach read
 ## Capabilities and Constraints
 
 - Static ES modules, no build step, hash routes: Coach (home), Learn (16 lessons), Puzzles (Lichess + My mistakes), Review (import, analyse, walk through), AI chat panel on every page.
-- Must stay free: no paid APIs, no accounts beyond the optional Google key.
+- Must stay free: no paid APIs, no accounts beyond the optional Google key. Never ask for a chess.com password.
 - Voice: on-device neural TTS (Piper voices, ~60 MB each, cached) with browser voices as fallback. No impersonation of real people's voices.
 - Board: chessground; rules: chess.js; engine: Stockfish 17.1 lite WASM.
 
@@ -37,6 +37,9 @@ Everything a paid coach-and-course stack does, free and personal: the coach read
 
 - Name: **Knight School**; coach persona: **Coach Knox** (♞ knight). Friendly, direct, encouraging, never condescending.
 - The owner hated the robotic voice; voice quality matters.
+- Look: the owner chose the familiar chess.com-style look (dark warm slate, green primary buttons, left sidebar) over four original directions (2026-11-21). Match that category's craft; never copy chess.com's name, logo or assets.
+- Level system: Elo (the player's chess.com rating), not belts or invented ranks.
+- chess.com is the account: the player signs in with their chess.com username (public API, no password) and the site uses their ratings and games everywhere.
 
 ## Evidence on Hand
 

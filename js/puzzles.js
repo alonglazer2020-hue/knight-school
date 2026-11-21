@@ -5,7 +5,7 @@ import { analyse, cancel, winPct } from './engine.js';
 import { Chess } from '../vendor/chess.js';
 import * as store from './store.js';
 import { setPage, sanLine } from './ai-coach.js';
-import { bumpToday, rank, stripeNews, beltSvg } from './belts.js';
+import { bumpToday, level, levelNews } from './levels.js';
 import { icon } from './icons.js';
 
 export const THEMES = {
@@ -75,10 +75,9 @@ export function puzzleView(view, params) {
     $('.mcount').textContent = `(${mistakes().length})`;
     const st = store.get('pstats', { solved: 0, failed: 0, streak: 0 });
     $('.rating').innerHTML = mode === 'lichess' ? `Puzzle rating <b>${Math.round(store.get('prating', 800))}</b>` : 'Positions where you went wrong in your own games';
-    // Carry the belt into the work: the stripe these puzzles are earning.
-    const rk = rank();
-    const s = rk.stripes.find(x => !x.ok && x.go.startsWith('#/puzzles')) ?? rk.stripes.find(x => !x.ok);
-    $('.rankline').innerHTML = `${beltSvg(rk.belt, rk.earned, { width: 56, height: 12, cls: 'belt mini' })}<span>${s ? `Toward <b>${rk.next.name}</b>: ${s.label}${s.need ? ` (${s.have}/${s.need})` : ''}` : `<b>${rk.belt.name}</b>`}</span>`;
+    // Your level carried into the work: Elo, next goal, and what this rating band should train.
+    const lv = level();
+    $('.rankline').innerHTML = `<span>${lv.label} <b>${lv.rating}</b> · next goal ${lv.goal}</span><span class="m">Train: ${lv.band.focus.toLowerCase()}</span>`;
     $('.streak').innerHTML = st.streak > 1 ? `${icon('flame')} ${st.streak} in a row` : '';
   }
 
@@ -126,7 +125,6 @@ Solution: ${sanLine(p.fen, p.solution, 12)}. Do NOT reveal the solution moves un
   function finish(win) {
     board.setInteractive(false);
     $('.b-next').disabled = false;
-    const before = rank();
     const st = store.get('pstats', { solved: 0, failed: 0, streak: 0, byTheme: {} });
     st.byTheme ??= {};
     const clean = win && !failed && hintLevel < 2;
@@ -154,7 +152,7 @@ Solution: ${sanLine(p.fen, p.solution, 12)}. Do NOT reveal the solution moves un
     if (win) {
       sfx.win();
       const tip = (p.themes ?? []).map(t => THEMES[t]).find(Boolean);
-      say(`${pick(SOLVED)}${stripeNews(before)} ${p.mistake ? (p.note ?? '') : tip && tip !== THEMES.mix ? `That was a ${tip.label.toLowerCase().replace(/s$/, '')} puzzle. ${tip.tip}` : ''}`, 'happy');
+      say(`${pick(SOLVED)}${level().source === 'Knight School' ? ' ' + levelNews() : ''} ${p.mistake ? (p.note ?? '') : tip && tip !== THEMES.mix ? `That was a ${tip.label.toLowerCase().replace(/s$/, '')} puzzle. ${tip.tip}` : ''}`, 'happy');
     }
   }
 

@@ -1,301 +1,259 @@
 ---
 name: Knight School
-description: A free personal chess coach run like a dojo, where your level is a belt you earn stripe by stripe.
+description: A free chess coach built around your real chess.com rating, your games and Coach Knox's plan.
 colors:
-  ink-0: "#121A3A"
-  ink-1: "#1A2550"
-  ink-2: "#23305F"
-  ink-3: "#33427A"
-  ink-4: "#45558F"
-  canvas: "#F1ECE0"
-  canvas-ink: "#1B2033"
-  muted: "#A3AAC4"
-  seal: "#E5482D"
-  seal-hi: "#CF3E24"
-  seal-lo: "#B5341D"
-  good: "#7BCB86"
-  bad: "#FF8A78"
-  amber: "#F2B04A"
-  board-slate: "#8191BD"
-  board-mist: "#E3E6EE"
-  belt-white: "#F2EFE8"
-  belt-yellow: "#F2C230"
-  belt-orange: "#F08A24"
-  belt-green: "#3FA34D"
-  belt-blue: "#2F7DE1"
-  belt-purple: "#8A4FD8"
-  belt-brown: "#8B5A2B"
-  belt-black: "#16161A"
-  belt-bar-black: "#16161A"
-  belt-bar-red: "#C8312A"
-  belt-tape: "#F4F1EA"
-  grade-best: "#DCE0EC"
-  grade-excellent: "#B8C0D8"
-  grade-good: "#929CBE"
-  grade-book: "#5E6B98"
-  grade-blunder: "#C9455A"
+  slate-ground: "#262421"
+  slate-rail: "#1F1E1C"
+  slate-card: "#312E2B"
+  slate-raise: "#3A3733"
+  slate-raise-hi: "#45423E"
+  slate-line: "#403C38"
+  text-primary: "#FFFFFF"
+  text-secondary: "#C3C0BC"
+  text-tertiary: "#A19E9A"
+  move-green: "#81B64C"
+  move-green-hi: "#95C45F"
+  move-green-edge: "#45753C"
+  move-green-ink: "#13200A"
+  loss-red: "#CA3431"
+  loss-text: "#F2766F"
+  draw-grey: "#A19E9A"
+  streak-amber: "#F7C045"
+  board-dark: "#739552"
+  board-light: "#EBECD0"
+  bubble-paper: "#FFFFFF"
+  bubble-ink: "#1A1A18"
 typography:
   display:
-    fontFamily: "Archivo, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
-    fontSize: "clamp(3rem, 7vw, 5.2rem)"
-    fontWeight: 900
-    lineHeight: 0.86
-    letterSpacing: "-0.01em"
-    fontVariation: "\"wdth\" 62"
-  headline:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "clamp(2.1rem, 4.2vw, 3.1rem)"
-    fontWeight: 850
-    lineHeight: 0.95
-    letterSpacing: "-0.005em"
-    fontVariation: "\"wdth\" 62"
-  title:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "1.4rem"
+    fontFamily: "Nunito Sans, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontSize: "3rem"
     fontWeight: 800
     lineHeight: 1.05
-    letterSpacing: "0.01em"
-    fontVariation: "\"wdth\" 62"
-  numeral:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "1.7rem"
-    fontWeight: 850
-    lineHeight: 1
-    fontFeature: "\"tnum\""
-    fontVariation: "\"wdth\" 62"
+    letterSpacing: "-0.02em"
+  headline:
+    fontFamily: "Nunito Sans, system-ui, sans-serif"
+    fontSize: "1.65rem"
+    fontWeight: 800
+    lineHeight: 1.2
+    letterSpacing: "-0.01em"
+  title:
+    fontFamily: "Nunito Sans, system-ui, sans-serif"
+    fontSize: "1.08rem"
+    fontWeight: 800
+    lineHeight: 1.3
   body:
-    fontFamily: "Archivo, system-ui, sans-serif"
+    fontFamily: "Nunito Sans, system-ui, sans-serif"
     fontSize: "16px"
     fontWeight: 400
-    lineHeight: 1.55
-    fontFeature: "\"tnum\""
+    lineHeight: 1.5
+    fontFeature: "tnum"
   label:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "0.95rem"
-    fontWeight: 600
-    lineHeight: 1.2
+    fontFamily: "Nunito Sans, system-ui, sans-serif"
+    fontSize: "0.85rem"
+    fontWeight: 700
+    lineHeight: 1.3
 rounded:
-  belt: "2px"
-  control: "8px"
-  panel: "10px"
-  card: "14px"
+  control: "6px"
+  inset: "8px"
+  card: "10px"
   pill: "999px"
 spacing:
-  xs: "0.35rem"
-  sm: "0.5rem"
-  md: "0.9rem"
-  lg: "1.1rem"
-  xl: "1.5rem"
-  section: "2.6rem"
+  row: "0.65rem"
+  gap: "1rem"
+  card-y: "1.1rem"
+  card-x: "1.25rem"
+  page-x: "2rem"
 components:
   button-primary:
-    backgroundColor: "{colors.seal}"
-    textColor: "#FFFFFF"
-    typography: "{typography.label}"
+    backgroundColor: "{colors.move-green}"
+    textColor: "{colors.move-green-ink}"
     rounded: "{rounded.control}"
     padding: "0.62em 1.05em"
   button-primary-hover:
-    backgroundColor: "{colors.seal-hi}"
-  button-primary-active:
-    backgroundColor: "{colors.seal-lo}"
+    backgroundColor: "{colors.move-green-hi}"
   button-secondary:
-    backgroundColor: "{colors.ink-2}"
-    textColor: "{colors.canvas}"
-    typography: "{typography.label}"
+    backgroundColor: "{colors.slate-raise}"
+    textColor: "{colors.text-primary}"
     rounded: "{rounded.control}"
     padding: "0.62em 1.05em"
   button-secondary-hover:
-    backgroundColor: "{colors.ink-3}"
-  button-icon:
-    backgroundColor: "transparent"
-    textColor: "{colors.canvas}"
-    rounded: "{rounded.control}"
-    size: "40px"
+    backgroundColor: "{colors.slate-raise-hi}"
+  button-link:
+    textColor: "{colors.move-green-hi}"
+    padding: "0.3em 0.2em"
+  card:
+    backgroundColor: "{colors.slate-card}"
+    rounded: "{rounded.card}"
+    padding: "1.1rem 1.25rem"
+  tile:
+    backgroundColor: "{colors.slate-ground}"
+    rounded: "{rounded.inset}"
+    padding: "0.65rem 0.8rem"
   input:
-    backgroundColor: "{colors.ink-0}"
-    textColor: "{colors.canvas}"
+    backgroundColor: "{colors.slate-ground}"
+    textColor: "{colors.text-primary}"
     rounded: "{rounded.control}"
     padding: "0.6em 0.8em"
+  nav-item-active:
+    backgroundColor: "{colors.slate-card}"
+    textColor: "{colors.text-primary}"
+    rounded: "{rounded.inset}"
+    padding: "0.62rem 0.7rem"
   chip:
-    backgroundColor: "{colors.ink-2}"
-    textColor: "{colors.canvas}"
+    backgroundColor: "{colors.slate-raise}"
+    textColor: "{colors.text-primary}"
     rounded: "{rounded.pill}"
     padding: "0.38em 0.8em"
   chip-active:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.canvas-ink}"
-  panel:
-    backgroundColor: "{colors.ink-1}"
-    textColor: "{colors.canvas}"
-    rounded: "{rounded.panel}"
-    padding: "1.1rem"
-  rank-card:
-    backgroundColor: "{colors.ink-1}"
-    textColor: "{colors.canvas}"
-    rounded: "{rounded.card}"
-    padding: "1.8rem 1.8rem 1.3rem"
+    backgroundColor: "{colors.text-primary}"
+    textColor: "{colors.slate-ground}"
+  goal-bar:
+    backgroundColor: "{colors.slate-ground}"
+    rounded: "5px"
+    height: "10px"
   coach-bubble:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.canvas-ink}"
+    backgroundColor: "{colors.bubble-paper}"
+    textColor: "{colors.bubble-ink}"
     rounded: "{rounded.card}"
-    padding: "0.75rem 2.4rem 0.85rem 1rem"
-  top-bar:
-    backgroundColor: "{colors.ink-1}"
-    textColor: "{colors.canvas}"
-    height: "62px"
+    padding: "0.7rem 2.4rem 0.8rem 0.95rem"
 ---
 
 # Design System: Knight School
 
 ## Overview
 
-**Creative North Star: "The Dojo"**
+**Creative North Star: "The Club Room After Hours"**
 
-Knight School is a kendo hall at night: deep aizome-indigo floors, gi-canvas cloth for anything the coach says, and a single vermilion seal stamped only where the player is meant to act. Your level is a belt you are earning, and every screen keeps that belt and its next stripe within reach. The system refuses the category default of a brown-and-green dashboard of equal stat tiles; rank is told as one heavy belt with a checklist, and stats sit in a quiet ruled list beside it.
+Knight School wears the category standard on purpose: the dark warm slate, left sidebar and bright green action that every serious chess site player already reads without thinking. The owner chose this canon over invented worlds, so the craft lives in execution, not novelty: tight card rhythm, tabular numbers, honest win/loss colour, one green button where the eye should go. It is personal rather than decorative; the screen is your real Elo, your games and Coach Knox's plan, nothing staged.
 
-Density is moderate and calm. Flat panels of indigo step up by tone rather than by shadow, ruled with hairlines one step lighter. Type is a single variable family, Archivo, pulled to condensed black for ranks, headings and numbers, and left at normal width for everything the player reads or clicks. Colour is rationed: indigo and canvas carry the whole interface, vermilion means "do this", amber-to-crimson means "this went wrong", and belt hues appear only where they report a rank.
+Density is medium-high, like a dashboard you check daily. Surfaces are flat tonal layers of one warm slate family; the only lift in the whole system is the green primary button's pressed-key bottom edge and the floating chat panel. Coach Knox speaks from a white paper bubble, the one light surface, so his voice reads as a person on a dark board.
+
+The world refuses invented rank systems, belts, mascots-as-decoration and any copy of chess.com's name, logo or artwork. It borrows the category's grammar, never its brand.
 
 **Key Characteristics:**
-- Indigo ink ramp ground, gi-canvas text and coach surfaces, flat colour throughout.
-- One vermilion seal colour, for actions only.
-- Condensed black uppercase Archivo for rank, headings and figures; normal width for UI.
-- The belt is the signature: stripes tape on when earned, the belt ties on at promotion.
-- Board squares in cool slate and mist, so the board belongs to the same night.
+- Warm near-black slate in three tonal steps (ground, rail, card) with no borders between cards.
+- One bright green primary per group, with a darker green bottom edge that depresses on press.
+- Nunito Sans at 700 to 800 for anything you scan; tabular numerals everywhere.
+- Result states as colour: win green, loss red, draw grey, in small square badges.
+- The classic green and cream board with a yellow last-move tint.
+- Lucide line icons only; chess notation (!!, ??, ?!) is text.
 
 ## Colors
 
-A cool indigo-and-canvas world with one warm seal for action and a separate warm scale reserved for errors.
+One warm slate family for every surface, one green that means "do this", and result colours that mean exactly what the game says.
 
 ### Primary
-- **Vermilion Seal** (seal): every primary action, and nothing else: the next stripe's Go, Next puzzle, Ask coach, Send, Load my games, the next lesson's status dot. Hover deepens to **Pressed Seal** (seal-hi), active to **Dried Seal** (seal-lo). Text on seal is pure white.
+- **Move Green** (#81B64C): primary buttons, the next-goal bar fill, the Elo trend line, done plan icons, win badges, active-check accents, selection highlight. Always paired with Move Green Ink (#13200A) for text on it.
+- **Move Green Bright** (#95C45F): hover on primary buttons, positive deltas, link-style actions (Review, Ask coach), focus rings, the active tab on the phone tab bar.
+- **Move Green Edge** (#45753C): the 3px bottom edge under primary buttons, the sign-in card's outline, completed puzzle dots.
+
+### Secondary
+- **Loss Red** (#CA3431): loss badges and the blunder grade. Text in loss red uses Loss Text (#F2766F) for contrast on slate.
+- **Streak Amber** (#F7C045): puzzle streaks, voice/sync status, weakness counts. Never a button.
 
 ### Neutral
-- **Aizome Night** (ink-0): page ground, input wells, segmented-control trough.
-- **Aizome Deep** (ink-1): panels, cards, top bar, bottom tab bar, chat panel.
-- **Aizome Raised** (ink-2): secondary buttons, hover fills, active segment.
-- **Aizome Rule** (ink-3): hairline borders and row dividers, empty progress tracks.
-- **Aizome Strong Rule** (ink-4): hover borders, focus border on inputs, the lesson-path ring.
-- **Gi Canvas** (canvas): body text, headings, the coach's speech bubble, earned-state markers (ticks, completed lesson dots), active tab underline, eval-bar fill.
-- **Canvas Ink** (canvas-ink): text set on canvas surfaces.
-- **Faded Indigo** (muted): secondary text, metadata, inactive tabs, completed items.
-
-### Status
-- **Moss** (good) for won games; **Coral** (bad) for lost games and errors; **Amber** (amber) for streaks, warnings and weakness counts.
-
-### Board
-- **Slate** (board-slate) dark squares and **Mist** (board-mist) light squares. Last move and selection are translucent tints of Aizome Night (20% and 32%); move targets are Aizome Night dots. Never green or yellow highlight squares.
-
-### Belt hues (rank data)
-White, yellow, orange, green, blue, purple, brown and black belts (belt-*), with a black rank bar (red, belt-bar-red, on the black belt) and off-white tape (belt-tape). These colours appear only inside a belt, a belt swatch or the mini belt chip.
-
-### Move-grade scale
-A single severity ramp. Good moves step from canvas through the indigo greys: Brilliant and Great in Gi Canvas, Best (grade-best), Excellent (grade-excellent), Good (grade-good), Book (grade-book). Problems step warm: Inaccuracy in Amber, Mistake and Miss in Coral, Blunder in Crimson (grade-blunder).
+- **Slate Ground** (#262421): page background, and the recessed fill for tiles, notes, bars and inputs inside cards.
+- **Slate Rail** (#1F1E1C): sidebar and phone tab bar.
+- **Slate Card** (#312E2B): cards, panels, the active nav item.
+- **Slate Raise** (#3A3733) and **Raise Hi** (#45423E): secondary buttons, chips, hover fills, current move.
+- **Slate Line** (#403C38): hairline row dividers inside lists, input borders.
+- **Text** (#FFFFFF), **Secondary** (#C3C0BC), **Tertiary** (#A19E9A): headings and values, supporting copy, captions and meta. Draw Grey shares the tertiary value.
+- **Board Dark / Board Light** (#739552 / #EBECD0): the board squares and their coordinates, last move in a translucent yellow (rgba(245, 246, 105, .5)).
+- **Bubble Paper / Bubble Ink** (#FFFFFF / #1A1A18): Coach Knox's speech bubble and AI chat replies; emphasis inside it is a deep green (#3D6B1F).
 
 ### Named Rules
-**The Seal Rule.** Vermilion means "act here". It never decorates, never marks status, never fills a chart, and selected or active states use canvas, not seal.
-
-**The Belt-Is-Data Rule.** A belt hue appears only when it reports a rank. No yellow headings, no green success states borrowed from the belts.
-
-**The Warm-Means-Wrong Rule.** Amber, coral and crimson are the error side of the severity scale. Good outcomes stay in canvas and cool indigo.
+**The One Green Rule.** Each group (a card, a plan list, a dialog) has at most one green primary button. In Today's plan only the first open item's Start is green; the rest are slate.
+**The Result Means It Rule.** Green, red and grey are reserved for win, loss and draw (and the matching move grades). Never use loss red for decoration or green for a non-action.
 
 ## Typography
 
-**Display Font:** Archivo, condensed (wdth 62), weights 800 to 900
-**Body Font:** Archivo, normal width, 400 to 650 (fallback system-ui, Segoe UI, Roboto, sans-serif)
+**Display Font:** Nunito Sans (with system-ui, -apple-system, Segoe UI, Roboto, sans-serif), variable 400 to 800 from Google Fonts.
 
-**Character:** One variable family stretched two ways: condensed black caps read like a rank stamped on cloth, normal-width Archivo stays plain and friendly for reading and controls. Numbers are tabular everywhere.
+**Character:** One friendly humanist sans doing all the work; weight, not family, makes hierarchy. Heavy 800 numbers make the Elo feel like a scoreboard.
 
 ### Hierarchy
-- **Display** (900, clamp 3 to 5.2rem, 0.86): the rank name on the coach home. Uppercase, condensed.
-- **Headline** (850, clamp 2.1 to 3.1rem, 0.95): page titles. Uppercase, condensed.
-- **Title** (800, 1.4rem, 1.05): section headings such as Today's session and Next: Orange belt; card titles at 1.12rem. Uppercase, condensed.
-- **Numeral** (850, 1.7rem, 1): stat values, puzzle rating, player scores, session step numbers. Condensed, tabular; units drop to 0.6em in Faded Indigo.
-- **Body** (400, 16px, 1.55): all reading text; supporting copy capped near 68ch.
-- **Label** (600, 0.95rem, 1.2): buttons, tabs, list-row titles (650 at 1.02rem). Sentence case, normal width.
+- **Display** (800, 3rem, 1.05, -0.02em): the main rating number only.
+- **Headline** (800, 1.65rem, 1.2): page titles such as the welcome header.
+- **Title** (800, 1.08rem, 1.3): card heads (Today's plan, Recent games); 1.3rem in board side panels.
+- **Body** (400, 16px, 1.5, tabular numerals): coach text and descriptions, max 70ch.
+- **Label** (700, 0.85rem): rating labels, field labels, row meta; captions drop to 0.75 to 0.8rem in tertiary grey.
 
 ### Named Rules
-**The Two-Widths Rule.** Condensed is for rank, headings and numbers only. Anything the player reads as a sentence or clicks as a control is normal width.
+**The Weight Not Size Rule.** Row titles and buttons are 700; headings and numbers are 800. Hierarchy inside a card comes from weight and grey level, not from new sizes.
 
 ## Layout
 
-Single centred column at 1140px max with 1.25rem gutters on reading pages; board pages use a two-column grid (board, then a 400px side panel) at 1220px with the board column sticky under the top bar and the board capped at viewport height minus 150px. The coach home is a two-column dojo grid: rank card, then a 360px coach column holding Coach Knox, a talk button and the stats list. Sections are separated by 2.6rem; list rows sit 0.45 to 0.55rem apart; panel padding is 1.1rem.
+A 224px sidebar beside a fluid page (max 1180px, padding 1.8rem 2rem 4rem). The Coach home stacks a full-width ratings card (main rating and trend at 1fr, ratings tiles and next-goal bar at 1.45fr) over two equal columns of cards with 1rem gaps. Board pages use a board column beside a 400px side panel, with the board sticky and sized to the viewport height.
 
-Responsive: at 1000px the dojo grid stacks and the coach column becomes a two-up grid; at 860px the tabs move to a fixed four-column bottom bar (64px plus safe area, active tab marked by a 3px canvas line on top), the top bar drops to 56px, logo text and Ask coach text hide, board pages stack to one column, and the chat becomes a bottom sheet at 88dvh. At 420px the belt chip label and session progress column hide.
+Rows inside lists are 0.55 to 0.65rem tall padding, separated by Slate Line hairlines, with no line above the first row. Under 1100px the ratings card and columns stack. Under 900px the sidebar becomes a 56px top bar and the nav becomes a fixed five-item bottom tab bar (64px plus safe area); the chat panel becomes a bottom sheet. Under 480px secondary columns (time control, plan progress, focus caption) drop.
 
 ## Elevation & Depth
 
-Depth is tonal: ink-0 ground, ink-1 panels, ink-2 raised and hover, each edged with an ink-3 hairline. Panels at rest carry no shadow. Shadows are reserved for things that float above the page or must lift off it.
+Flat tonal layering. Depth comes from stepping the slate: rail is darkest, ground in the middle, cards above, and recessed elements (tiles, notes, bars, inputs) drop back to ground inside a card. Cards carry no border and no shadow.
 
 ### Shadow Vocabulary
-- **Board lift** (`box-shadow: 0 12px 32px rgba(0,0,0,.5)`): the chessboard only, so the work surface sits above the chrome.
-- **Popover** (`box-shadow: 0 18px 40px rgba(0,0,0,.5)`): settings popovers under the top bar.
-- **Sheet** (`box-shadow: 0 22px 50px rgba(0,0,0,.55)`): the floating coach chat panel.
+- **Key edge** (`box-shadow: 0 3px 0 #45753C`): only under green primary buttons, collapsing to `0 1px 0` with a 2px drop on press. It is the category's pressed-key button, native to this world.
+- **Floating panel** (`box-shadow: 0 20px 50px rgba(0, 0, 0, .55)`): only the Ask coach chat panel, which floats above the page.
 
 ### Named Rules
-**The Flat Cloth Rule.** Surfaces are flat indigo at rest. No gradients, no glows, no coloured shadows; a shadow means the element floats.
+**The Only Lift Rule.** Nothing else gets a shadow. A new card that wants to stand out gets the green-edge outline (1px #45753C) like the sign-in card, not elevation.
 
 ## Shapes
 
-Gently rounded rectangles: 8px for controls and inputs, 10px for panels and list rows, 14px for the rank card, board side panel, chat and coach bubble. Chips are full pills. Status markers (ticks, session numbers, lesson dots, grade badges, avatar) are circles. The belt itself is nearly square-cornered (2 to 3px) so it reads as cloth, not a button. Speech surfaces pinch one corner to 4px on the speaker's side.
+Gently rounded, never pill-shaped except chips and status pills. Cards and panels 10px; inset tiles, nav items, plan icons and game rows 8px; buttons and inputs 6px; result badges 6px squares; lesson status markers are circles; the board itself 4px. The sidebar logo and Coach Knox's avatar sit on small white rounded squares (7 to 8px).
 
 ## Components
 
 ### Buttons
-- **Shape:** gently rounded (8px), 1px border.
-- **Primary:** Vermilion Seal fill and border, white label, 600 weight. Hover to seal-hi, active to seal-lo plus a 1px press. Disabled primaries fall back to Aizome Raised with Faded Indigo text.
-- **Secondary:** Aizome Raised fill, Aizome Rule border, canvas label; hover steps to ink-3 fill and ink-4 border. Leading Lucide icon at 1.15em with a 0.45em gap.
-- **Icon button:** 40px square, transparent until hover. Off state dims to a darker muted indigo; warning state is amber.
-- **Focus:** 2px canvas outline, 2px offset, on every focusable element.
+Solid, chunky and finger-sized.
+- **Shape:** softly rounded (6px), 700 weight, 0.95rem, icon gap 0.45em.
+- **Primary:** Move Green with Move Green Ink at 800 weight, key edge beneath; hover brightens to Move Green Bright; press drops 2px as the edge shrinks. Disabled returns to slate with no edge.
+- **Secondary:** Slate Raise, white text, hover Raise Hi, press drops 1px.
+- **Link:** no fill, Move Green Bright text; hover turns white and underlined. Used for Review and inline actions.
+- **Outlined (Ask coach):** transparent with a Slate Line border and green text, sidebar only.
+- **Focus:** 2px Move Green Bright outline, 2px offset, on every interactive element.
 
-### Chips
-- **Style:** pill, secondary-button colours, 0.84rem.
-- **State:** active chip is Gi Canvas with Canvas Ink text. Never seal.
-
-### Segmented control
-Aizome Night trough with a 3px inset; segments are transparent muted text, the active one is Aizome Raised with a rule border.
+### Chips and Pills
+- **Chip:** Slate Raise pill (999px), 0.84rem; active chip inverts to white with slate text.
+- **Status pill:** translucent green (rgba(129, 182, 76, .14)) with light green text (#B4DA8A) and a Lucide icon, for "Connected to chess.com".
 
 ### Cards / Containers
-- **Corner Style:** 10px (panels, rows), 14px (rank card, side panel).
-- **Background:** Aizome Deep, Aizome Raised on hover for clickable rows.
-- **Shadow Strategy:** none (see Elevation & Depth).
-- **Border:** 1px Aizome Rule, Aizome Strong Rule on hover.
-- **Internal Padding:** 1.1rem; rank card 1.8rem.
+- **Corner Style:** 10px.
+- **Background:** Slate Card on Slate Ground.
+- **Shadow Strategy:** none (see Elevation).
+- **Border:** none; the sign-in card alone carries a 1px Move Green Edge outline.
+- **Internal Padding:** 1.1rem by 1.25rem; card head sits on a baseline row with a tertiary "See all" or count on the right.
 
 ### Inputs / Fields
-- **Style:** Aizome Night well, 1px Aizome Rule stroke, 8px radius, vermilion caret.
-- **Focus:** border steps to Aizome Strong Rule; the global canvas focus ring applies on keyboard focus.
+- **Style:** Slate Ground fill, 1px Slate Line border, 6px radius, green caret.
+- **Focus:** border shifts to tertiary grey; the global green focus ring covers keyboard focus.
+- **Error:** message in Loss Text below the field.
 
 ### Navigation
-Top bar in Aizome Deep, 62px, sticky, with a hairline beneath. Tabs are label-weight Faded Indigo with a Lucide icon; hover lifts to canvas; active is canvas with a 3px canvas underline. On phones the same tabs become a bottom bar with icon over label. The belt chip (a 56 by 12px mini belt plus belt name) sits at the right of the bar.
+Sidebar on Slate Rail: logo, then Coach / Learn / Puzzles / Review / Settings with Lucide icons, 700 weight, secondary grey. Hover is a 5% white wash; active is a Slate Card fill with white text. Account chip pinned to the bottom. On phones the same five items become a bottom tab bar with stacked icon and 0.72rem label; active turns Move Green Bright with no fill.
 
-### Belt (signature component)
-An SVG cloth band in the belt hue, two thin stitch lines at 22% and 78% height, and a rank bar (black, red on the black belt) placed from 64% to 88% of the width holding up to four off-white tape stripes. Unearned tapes sit at 16% opacity; earned tapes are solid. Sizes: hero belt full width by 46px, mini belt 56 by 12px, swatch 40 by 12px. Motion: a newly earned stripe tapes on with scaleY from the top (0.7s, 0.5s delay, ease-out expo); a promotion ties the hero belt on with a left-to-right clip-path reveal (1.1s). Paired with the next-belt checklist: ruled rows with a 30px circular tick (canvas when earned), the requirement, and a Go button; only the first unearned row's Go is primary.
+### Result Badge and Move Grades
+Square 26px badges with W / L / D in 800: win on Move Green with green ink, loss on Loss Red with white, draw on grey with near-black. Move grades use the familiar grade palette (Brilliant teal #26C2A3 through Blunder #CA3431), each round badge carrying its own ink colour chosen for contrast; grades without a notation symbol (best, good, book, miss) use a Lucide icon instead of text.
 
-### Lesson path
-Each belt's lessons are one connected path: a 2px Aizome Rule rail through 34px circular status dots. Done is a canvas dot with a check, next is a seal dot with a canvas row border, locked is an Aizome Night dot with a Strong Rule ring.
+### Coach Bubble
+Coach Knox's knight avatar on a white rounded square beside a white speech bubble with a left-pointing tail, 10px radius, near-black text, a small grey "Coach Knox" name line and a replay icon button in the corner. The avatar hops on good news and shakes on bad, disabled under reduced motion.
 
-### Coach Knox
-Circular canvas avatar holding the cburnett knight, beside a canvas speech bubble in Canvas Ink with a condensed uppercase speaker name. Happy mood hops the avatar; sad mood shakes it and turns it amber.
-
-### Move-grade badge
-A circular badge in the grade colour with its ink. Annotation grades use the chess symbols (!!, !, ?!, ?, ??); Best, Excellent, Good, Book and Miss use Lucide icons (star, check, book, close), never emoji.
+### Next-Goal Bar (signature)
+Under the ratings tiles: "Next goal: 1800" with points-to-go on the right, a 10px recessed Slate Ground track with a Move Green fill that eases in over 0.8s, and a caption row of start rating, focus advice and target. It is the one place the screen tells you where you are going.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** keep the ground in the indigo ramp (ink-0 to ink-4) and set text in Gi Canvas.
-- **Do** use Vermilion Seal (#E5482D) only on actions, with hover #CF3E24.
-- **Do** show belt hues only as rank data: the belt, its swatch, the belt chip.
-- **Do** use Archivo condensed (wdth 62) black uppercase for rank, headings and numbers, normal width for UI.
-- **Do** draw every icon from the Lucide set in js/icons.js: inline SVG, currentColor stroke, stroke-width 2, round caps and joins.
-- **Do** colour move grades on the ink-to-canvas / amber-to-crimson severity scale.
-- **Do** keep board highlights as indigo tints on slate and mist squares.
-- **Do** honour reduced motion: all animations and transitions switch off.
+- **Do** keep one green primary per group; every other button in that group is Slate Raise or a link.
+- **Do** put dark ink (#13200A) on green fills and use Loss Text (#F2766F), not Loss Red, for red text on slate.
+- **Do** use Lucide inline SVG icons at 1.15em with a 2px round stroke.
+- **Do** write chess notation (!!, !, ?!, ?, ??) as text, and give each grade badge its own ink colour for contrast.
+- **Do** disable hover fills on touch screens under `(hover: none)` so no fill stays stuck after a tap.
+- **Do** step surfaces by tone (rail, ground, card, raise) instead of adding borders or shadows.
 
 ### Don't:
-- **Don't** use gradients or glows on interface surfaces. (The board's checker pattern and move-target dots are drawn with CSS gradients as a rendering technique; that is not a decorative gradient.)
+- **Don't** copy chess.com's name, logo or any of its assets; the category look is shared, the brand is not.
 - **Don't** use emoji or Unicode glyphs as icons.
-- **Don't** put seal on status, selection, active tabs, active chips or charts.
-- **Don't** borrow a belt colour for headings, success states or accents.
-- **Don't** lay stats out as a row of equal tiles; they live in a ruled list.
-- **Don't** add shadows to resting panels.
+- **Don't** invent rank systems, belts or decorative worlds; ratings are the player's real chess.com Elo.
+- **Don't** add shadows beyond the primary key edge and the floating chat panel.
+- **Don't** use green, red or grey for anything that is not an action or a win, loss or draw.
