@@ -275,7 +275,10 @@ function renderReview(view, R, fresh = false) {
   const board = new Board($('.board'), { onMove: retryMove });
   let idx = -1, retrying = false, run = 0, line = false; // run: bumped to stop any move animation in progress
   const KEY = ['blunder', 'mistake', 'miss', 'brilliant', 'great'];
-  const isKey = i => R.plies[i].color === R.myColor && KEY.includes(R.plies[i].cls);
+  const isKey = i => { // your key moves, plus your opponent's brilliant/great moves and blunders
+    const p = R.plies[i];
+    return p.color === R.myColor ? KEY.includes(p.cls) : ['brilliant', 'great', 'blunder'].includes(p.cls);
+  };
   const nextKey = () => { for (let j = idx + 1; j < N; j++) if (isKey(j)) return j; return N - 1; }; // else the last move
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const jump = (i, speak = true) => { run++; go(i, speak); };
