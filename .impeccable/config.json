@@ -17,6 +17,18 @@
         "value": "consolas",
         "createdAt": "2026-11-21T09:08:37.701Z",
         "reason": "assistant triage: monospace only for the sync code display and code-entry field, data the player types character by character, not a UI type role"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "lexend",
+        "createdAt": "2026-11-21T14:58:30.081Z",
+        "reason": "owner chose the Violet look (Lexend) as default; documented in DESIGN.md > Looks"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "overpass",
+        "createdAt": "2026-11-21T14:58:30.181Z",
+        "reason": "owner kept the Midnight look (Overpass) in Settings > Look; documented in DESIGN.md > Looks"
       }
     ]
   }
