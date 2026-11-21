@@ -1,6 +1,6 @@
 // Game Review: import from chess.com / Lichess / PGN, analyse with Stockfish, and walk through it with the coach.
 import { Board, arrow, uciOf } from './board.js';
-import { coachBox, say, sfx } from './coach.js';
+import { coachBox, say, sfx, hush, prepare } from './coach.js';
 import { analyse, winPct } from './engine.js';
 import { parseGame, buildReview, terminalEval, CLASSES, BAD } from './analysis.js';
 import { Chess } from '../vendor/chess.js';
@@ -243,7 +243,7 @@ function summaryText(R) {
   else if (mi) s += ` No blunders, nice! But ${mi} mistake${mi > 1 ? 's' : ''}.`;
   else s += ' No blunders and no mistakes. Super clean game!';
   if (gr) s += ` And you found ${gr} great move${gr > 1 ? 's' : ''}!`;
-  s += bl + mi ? ' Press "Key moments" and let\'s learn from them.' : '';
+  s += bl + mi ? ' Press "Start review" and let\'s learn from them.' : ' Press "Start review" to see the key moves.';
   return s;
 }
 
@@ -257,12 +257,13 @@ function renderReview(view, R, fresh = false) {
     </div>
     <aside class="side">
       <div class="crumb"><a href="#/review">${icon('back')} Games</a></div>
+      <div class="coachslot"></div>
+      <button class="b-next primary bignext"></button>
+      <div class="btns"><button class="b-retry">${icon('retry')} Retry move</button><button class="b-line">${icon('eye')} <span>Show best line</span></button><button class="b-ask">${icon('chat')} Ask coach</button></div>
       <div class="players">
         <div><i class="dot w"></i>${esc(R.white)} ${R.wr ? `(${R.wr})` : ''}<b>${Math.round(R.accuracy.w)}%</b></div>
         <div><i class="dot b"></i>${esc(R.black)} ${R.br ? `(${R.br})` : ''}<b>${Math.round(R.accuracy.b)}%</b></div>
       </div>
-      <div class="coachslot"></div>
-      <div class="btns"><button class="b-retry">${icon('retry')} Retry move</button><button class="b-best">${icon('eye')} <span>Show best</span></button><button class="b-key primary">${icon('target')} Key moments</button><button class="b-ask">${icon('chat')} Ask coach</button></div>
       <svg class="graph" viewBox="0 0 ${Math.max(N, 1)} 100" preserveAspectRatio="none"></svg>
       <table class="tally"><tr><th></th><th>${esc(R.white)}</th><th>${esc(R.black)}</th></tr>
         ${Object.entries(CLASSES).map(([k, c]) => `<tr><td>${badge(c)}${c.label}</td><td>${R.counts.w[k] ?? 0}</td><td>${R.counts.b[k] ?? 0}</td></tr>`).join('')}
@@ -272,12 +273,17 @@ function renderReview(view, R, fresh = false) {
   const $ = s => view.querySelector(s);
   $('.coachslot').append(coachBox());
   const board = new Board($('.board'), { onMove: retryMove });
-  let idx = -1, showBest = true, retrying = false;
+  let idx = -1, retrying = false, run = 0, line = false; // run: bumped to stop any move animation in progress
+  const KEY = ['blunder', 'mistake', 'miss', 'brilliant', 'great'];
+  const isKey = i => R.plies[i].color === R.myColor && KEY.includes(R.plies[i].cls);
+  const nextKey = () => { for (let j = idx + 1; j < N; j++) if (isKey(j)) return j; return N - 1; }; // else the last move
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const jump = (i, speak = true) => { run++; go(i, speak); };
 
   // move list
   $('.moves').innerHTML = R.plies.map((p, i) => `${i % 2 === 0 ? `<span class="num">${i / 2 + 1}.</span>` : ''}
     <button class="mv" data-i="${i}">${badge(CLASSES[p.cls])}${esc(p.san)}</button>`).join('');
-  $('.moves').onclick = e => { const b = e.target.closest('.mv'); if (b) go(+b.dataset.i); };
+  $('.moves').onclick = e => { const b = e.target.closest('.mv'); if (b) jump(+b.dataset.i); };
 
   // eval graph (white's win chance)
   const wps = R.evals.map(e => winPct(e));
@@ -287,7 +293,7 @@ function renderReview(view, R, fresh = false) {
     ${R.plies.map((p, i) => ['blunder', 'mistake', 'miss', 'brilliant', 'great'].includes(p.cls)
       ? `<line x1="${i + 1}" x2="${i + 1}" y1="0" y2="100" stroke="${CLASSES[p.cls].mark ?? CLASSES[p.cls].color}" stroke-width="${Math.max(N / 200, 0.25)}" opacity=".9"/>` : '').join('')}
     <line class="gcur" x1="0" x2="0" y1="0" y2="100"/>`;
-  $('.graph').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); go(Math.round(((e.clientX - r.left) / r.width) * N) - 1); };
+  $('.graph').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); jump(Math.round(((e.clientX - r.left) / r.width) * N) - 1); };
 
   function shapesFor(i) {
     if (i < 0) return [];
@@ -295,13 +301,15 @@ function renderReview(view, R, fresh = false) {
     const s = [{ orig: m.to, customSvg: { html: `<circle cx="82" cy="18" r="16" fill="${c.color}" stroke="#fff" stroke-width="2.5"/>${c.icon
       ? `<g transform="translate(70.5 6.5) scale(.96)" fill="none" stroke="${c.ink}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${iconPaths(c.icon)}</g>`
       : `<text x="82" y="24.5" font-size="${c.sym.length > 1 ? 16 : 20}" font-weight="800" text-anchor="middle" fill="${c.ink}" font-family="Archivo, sans-serif">${c.sym}</text>`}` } }];
-    if (showBest && p.best && p.uci !== p.best && !['book', 'best', 'brilliant', 'great'].includes(p.cls)) s.push(arrow(p.best, 'green'));
+    if (hasBetter(p)) s.push(arrow(p.best, 'green'));
     return s;
   }
 
+  function hasBetter(p) { return p && p.best && p.uci !== p.best && !['book', 'best', 'brilliant', 'great'].includes(p.cls); }
+
   function go(i, speak = true) {
     i = Math.max(-1, Math.min(N - 1, i));
-    retrying = false;
+    retrying = false; line = false;
     const stepping = i === idx + 1 && i >= 0;
     if (stepping) {
       board.load(R.fens[i], { interactive: false, lastMove: i > 0 ? [R.moves[i - 1].from, R.moves[i - 1].to] : undefined });
@@ -321,7 +329,44 @@ function renderReview(view, R, fresh = false) {
     $('.gcur').setAttribute('x1', i + 1); $('.gcur').setAttribute('x2', i + 1);
     const p = R.plies[i];
     $('.b-retry').hidden = !(p && p.color === R.myColor && BAD.includes(p.cls) && p.best);
-    if (speak) say(i < 0 ? summaryText(R) : p.note, p && BAD.includes(p.cls) ? 'sad' : p && ['brilliant', 'great', 'best'].includes(p.cls) ? 'happy' : '');
+    $('.b-line').hidden = !hasBetter(p);
+    $('.b-line span').textContent = 'Show best line';
+    $('.b-next').innerHTML = i < 0 ? `Start review ${icon('next')}` : i >= N - 1 ? `${icon('first')} Back to the start` : `Next ${icon('next')}`;
+    if (!speak) return;
+    say(i < 0 ? summaryText(R) : p.note, p && BAD.includes(p.cls) ? 'sad' : p && ['brilliant', 'great', 'best'].includes(p.cls) ? 'happy' : '');
+    const k = nextKey();
+    if (k > i) prepare(R.plies[k].note); // the voice for the next stop is ready by the time Next is pressed
+  }
+
+  // Next: play the game forward (animated, with sound) to your next key move, then the coach explains it.
+  async function next() {
+    if (idx >= N - 1) return jump(-1);
+    const my = ++run, j = nextKey(), step = Math.max(160, Math.min(450, 5000 / (j - idx)));
+    hush();
+    while (idx < j - 1) {
+      go(idx + 1, false);
+      await wait(step);
+      if (my !== run) return; // another button was pressed meanwhile
+    }
+    go(j);
+  }
+
+  // Show best line: back to the position before the move, then Stockfish's best line plays out on the board.
+  async function showLine() {
+    if (line) return jump(idx); // back to the game move and its explanation (its voice is already made, so no wait)
+    const p = R.plies[idx], my = ++run;
+    line = true;
+    $('.b-line span').textContent = 'Back to the game';
+    say(`The best move was ${p.bestSan}. Watch how it goes.`);
+    const r = await analyse(R.fens[idx], { depth: 12, multipv: 3 });
+    if (my !== run) return;
+    const pv = (r?.lines.find(l => l.pv[0] === p.best) ?? r?.lines[0])?.pv ?? [p.best];
+    board.load(R.fens[idx], { interactive: false, lastMove: idx > 0 ? [R.moves[idx - 1].from, R.moves[idx - 1].to] : undefined });
+    for (const mv of pv.slice(0, 6)) {
+      await wait(750);
+      if (my !== run) return;
+      try { board.play(mv); } catch { return; }
+    }
   }
 
   async function retryMove(m) {
@@ -341,18 +386,13 @@ function renderReview(view, R, fresh = false) {
 
   $('.b-retry').onclick = () => {
     const p = R.plies[idx];
-    retrying = true;
+    run++; retrying = true;
     board.load(R.fens[idx], { interactive: true, lastMove: idx > 0 ? [R.moves[idx - 1].from, R.moves[idx - 1].to] : undefined });
     say(`In the game you played ${p.san}. Find something better!`);
   };
-  $('.b-best').onclick = () => { showBest = !showBest; $('.b-best span').textContent = showBest ? 'Hide best' : 'Show best'; board.shapes(shapesFor(idx)); };
-  $('.b-best span').textContent = 'Hide best';
-  $('.b-key').onclick = () => {
-    const key = i => R.plies[i].color === R.myColor && ['blunder', 'mistake', 'miss', 'brilliant', 'great'].includes(R.plies[i].cls);
-    for (let k = 1; k <= N; k++) { const j = (idx + k + N) % N; if (key(j)) return go(j); }
-    say('No key moments in this game. Clean play!');
-  };
-  const nav = { first: () => go(-1), prev: () => go(idx - 1), next: () => go(idx + 1), last: () => go(N - 1) };
+  $('.b-line').onclick = showLine;
+  $('.b-next').onclick = next;
+  const nav = { first: () => jump(-1), prev: () => jump(idx - 1), next: () => jump(idx + 1), last: () => jump(N - 1) };
   view.querySelectorAll('.nav button').forEach(b => b.onclick = () => nav[b.dataset.n]());
   window.onkeydown = e => {
     if (e.target.closest('input,textarea')) return;

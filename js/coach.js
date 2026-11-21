@@ -77,6 +77,7 @@ const audio = new Audio();
 audio.preservesPitch = true;
 // iOS only lets audio play after a tap; unlock our single <audio> element on the first one.
 addEventListener('pointerdown', () => {
+  if (settings.sound) try { ctx(); } catch { /* no Web Audio */ } // phones only allow sound effects after a tap too
   audio.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
   audio.play().catch(() => {});
 }, { once: true });
@@ -110,18 +111,39 @@ const PIPER = { ensure: ensureVoice, synth };
 const KOKORO = { ensure: (id, p) => ensureKokoro(p), synth: synthKokoro };
 export { KOKORO_VOICES };
 
+const sentences = text => text.match(/[^.!?]+[.!?]*/g)?.map(s => s.trim()).filter(Boolean) ?? [text];
+// Generated sentences, kept so prepare() can make the coach's next line ready before it's needed.
+const made = new Map();
+function synthOnce(eng, part, id) {
+  const k = `${settings.voiceName}|${part}`;
+  if (!made.has(k)) {
+    made.set(k, eng.synth(part, id));
+    made.get(k).catch(() => made.delete(k));
+    if (made.size > 30) made.delete(made.keys().next().value);
+  }
+  return made.get(k);
+}
+// Start generating a line the coach will probably say next, so it plays without the 5-second wait.
+export function prepare(text) {
+  const v = settings.voiceName;
+  if (!settings.voice || !text || !/^(ko|ai):/.test(v)) return;
+  if (v.startsWith('ko:') && !store.get('koReady', false)) return; // never start the big download just to prefetch
+  const eng = v.startsWith('ko:') ? KOKORO : PIPER, id = v.slice(3);
+  eng.ensure(id).then(() => { for (const s of sentences(spoken(text))) synthOnce(eng, s, id).catch(() => {}); }).catch(() => {});
+}
+
 async function speakAI(text, id, my, eng = PIPER) {
   try {
     await eng.ensure(id, p => voiceStatus(`Downloading the coach's voice… ${Math.round(p * 100)}% (one time only)`));
     voiceStatus('');
     if (eng === KOKORO) store.set('koReady', true);
     // Speak sentence by sentence, generating the next one while the current one plays.
-    const parts = text.match(/[^.!?]+[.!?]*/g)?.map(s => s.trim()).filter(Boolean) ?? [text];
-    let next = eng.synth(parts[0], id);
+    const parts = sentences(text);
+    let next = synthOnce(eng, parts[0], id);
     for (let i = 0; i < parts.length; i++) {
       const blob = await next;
       if (my !== token) return;
-      if (i + 1 < parts.length) next = eng.synth(parts[i + 1], id);
+      if (i + 1 < parts.length) next = synthOnce(eng, parts[i + 1], id);
       await play(blob, my);
       if (my !== token) return;
     }

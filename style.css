@@ -222,6 +222,8 @@ a.lesson:hover .go { transform: translateX(3px); color: var(--text); }
 .crumb a:hover { color: var(--text); }
 .btns { display: flex; gap: .5rem; flex-wrap: wrap; }
 .btns > * { flex: 1 1 auto; }
+.bignext { width: 100%; padding: .85rem 1rem; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: .4rem; }
+.btns [hidden] { display: none; }
 .dots { display: flex; gap: 4px; }
 .dots span { flex: 1; height: 6px; border-radius: 3px; background: var(--raise); }
 .dots span.on { background: var(--green-edge); }
