@@ -2,8 +2,9 @@
 // Devices share a random 20-character sync code; each saved item lives at sync/{code}/k/{item}.
 // Security rules only allow access to a code's items if you know the code (no listing of codes).
 import * as store from './store.js';
+import { idToken, session } from './auth.js';
 
-const API_KEY = 'AIzaSyCdx8IKGnnyDfqfjZzvNxXYiYu1kPPody8'; // public web key by design; access is limited by Firestore rules
+export const API_KEY = 'AIzaSyCdx8IKGnnyDfqfjZzvNxXYiYu1kPPody8'; // public web key by design; access is limited by Firestore rules
 const PROJECT = 'knight-school-6bddd';
 const DOCS = `projects/${PROJECT}/databases/(default)/documents`;
 const BASE = `https://firestore.googleapis.com/v1/${DOCS}`;
@@ -21,11 +22,11 @@ function newCode() {
 }
 const docId = key => btoa(String.fromCharCode(...new TextEncoder().encode(key))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-async function pull(code) {
+async function pull(t) {
   const out = {};
   let page = '';
   do {
-    const r = await fetch(`${BASE}/sync/${code}/k?key=${API_KEY}&pageSize=300${page ? '&pageToken=' + encodeURIComponent(page) : ''}`);
+    const r = await fetch(`${BASE}/${t.path}?key=${API_KEY}&pageSize=300${page ? '&pageToken=' + encodeURIComponent(page) : ''}`, { headers: t.headers });
     if (!r.ok) throw new Error(`couldn't read your progress (${r.status})`);
     const j = await r.json();
     for (const d of j.documents ?? []) {
@@ -37,15 +38,15 @@ async function pull(code) {
   return out;
 }
 
-async function push(code, entries) {
+async function push(tg, entries) {
   for (let i = 0; i < entries.length; i += 400) {
     const writes = entries.slice(i, i + 400).map(([k, v, t]) => ({
       update: {
-        name: `${DOCS}/sync/${code}/k/${docId(k)}`,
+        name: `${DOCS}/${tg.path}/${docId(k)}`,
         fields: { k: { stringValue: k }, v: v == null ? { nullValue: null } : { stringValue: v }, t: { integerValue: String(t) } },
       },
     }));
-    const r = await fetch(`${BASE}:commit?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ writes }) });
+    const r = await fetch(`${BASE}:commit?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...tg.headers }, body: JSON.stringify({ writes }) });
     if (!r.ok) throw new Error(`couldn't save your progress (${r.status})`);
   }
 }
@@ -61,6 +62,15 @@ const UNION = {
   games: byKey(50),
   reviews: byKey(30),
 };
+
+// Where progress lives: your account when signed in, else the shared sync code (null = not syncing).
+async function target() {
+  const tok = await idToken();
+  if (tok) return { path: `users/${session().uid}/k`, headers: { Authorization: 'Bearer ' + tok } };
+  const c = state().code;
+  return c ? { path: `sync/${c}/k`, headers: {} } : null;
+}
+const codeTarget = c => ({ path: `sync/${c}/k`, headers: {} });
 
 let running = null, again = false;
 // Returns true if anything on this device changed.
@@ -78,10 +88,11 @@ export function syncNow() {
 }
 
 async function syncOnce() {
-  const s = state();
-  if (!s.code) return false;
+  let t;
+  try { t = await target(); } catch (e) { saveState({ ...state(), error: e.message }); return false; }
+  if (!t) return false;
   try {
-    const remote = await pull(s.code);
+    const remote = await pull(t);
     const local = store.snapshot();
     const toPush = [];
     let changed = false;
@@ -102,7 +113,7 @@ async function syncOnce() {
         toPush.push([k, L.v, L.t]);
       }
     }
-    await push(s.code, toPush);
+    await push(t, toPush);
     saveState({ ...state(), at: Date.now(), error: '' });
     return changed;
   } catch (e) {
@@ -122,10 +133,17 @@ export async function createCode() {
 export async function joinCode(input) {
   const code = normalize(input);
   if (!code) throw new Error('That code should be 20 letters/numbers, like ABCD-EFGH-JKLM-NPQR-STUV.');
-  const remote = await pull(code);
+  const remote = await pull(codeTarget(code));
   if (!Object.keys(remote).length) throw new Error("No progress found for that code. Check it and try again.");
   store.stampUnstamped(0);
   saveState({ code, at: 0, error: '' });
+  return syncNow();
+}
+// Just signed in: a brand-new account takes this device's progress; an existing one wins over unsynced local data.
+export async function adoptAccount() {
+  const remote = await pull(await target());
+  store.stampUnstamped(Object.keys(remote).length ? 0 : Date.now());
+  saveState({ code: null, at: 0, error: '' });
   return syncNow();
 }
 export function leave() { saveState({ code: null, at: 0, error: '' }); }

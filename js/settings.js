@@ -2,6 +2,8 @@
 import { settings, toggle, speak, voices, setVoice, AI_VOICES, KOKORO_VOICES } from './coach.js';
 import { account, stats, signIn, signOut, refresh, lastSync, games, syncing } from './chesscom.js';
 import { initSyncPanel } from './sync-ui.js';
+import * as auth from './auth.js';
+import { adoptAccount, state as syncState } from './sync.js';
 import { icon } from './icons.js';
 import * as store from './store.js';
 
@@ -28,10 +30,46 @@ export function signInForm(onDone) {
   return f;
 }
 
+// Sign in / create a Knight School account (chess.com username + a password for this site).
+export function accountForm(onDone) {
+  const f = document.createElement('form');
+  f.className = 'signin acctform';
+  let mode = 'up';
+  const paint = () => {
+    const up = mode === 'up';
+    f.innerHTML = `<div class="seg"><button type="button" data-m="up" class="${up ? 'active' : ''}">Create account</button><button type="button" data-m="in" class="${up ? '' : 'active'}">Sign in</button></div>
+      <label for="kU">chess.com username</label><input id="kU" name="u" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      <label for="kP">${up ? 'Pick a password for Knight School' : 'Knight School password'}</label><input id="kP" name="p" type="password" autocomplete="${up ? 'new-password' : 'current-password'}" minlength="6" required>
+      ${up ? '<label for="kP2">Type the password again</label><input id="kP2" name="p2" type="password" autocomplete="new-password" minlength="6" required>' : ''}
+      <button class="primary">${up ? 'Create account' : 'Sign in'}</button>
+      <p class="hint">${up ? "Use a <b>new</b> password, not your chess.com one. There's no email, so a forgotten password can't be reset: save it somewhere." : 'Your progress, games and Elo come with you on every device.'}</p>
+      <p class="msg" role="status"></p>`;
+    f.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { mode = b.dataset.m; paint(); });
+  };
+  paint();
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const btn = f.querySelector('button.primary'), msg = f.querySelector('.msg'), u = f.u.value.trim(), p = f.p.value;
+    const fail = m => { msg.textContent = m; msg.classList.add('err'); };
+    msg.textContent = ''; msg.classList.remove('err');
+    if (mode === 'up' && p !== f.p2.value) return fail('The two passwords are different.');
+    const label = btn.textContent;
+    btn.disabled = true; btn.textContent = mode === 'up' ? 'Creating…' : 'Signing in…';
+    try {
+      if (mode === 'up') { await signIn(u); await auth.signUp(u, p); } // the chess.com name must exist first
+      else await auth.signIn(u, p);
+      await adoptAccount();
+      if (account()?.username.toLowerCase() !== u.toLowerCase()) await signIn(u);
+      onDone?.();
+    } catch (err) { fail(err.message); btn.disabled = false; btn.textContent = label; dispatchEvent(new CustomEvent('ks-account')); }
+  };
+  return f;
+}
+
 export function settingsView(view, onRemoteChange) {
   const acc = account(), s = stats();
   view.innerHTML = `<div class="page settings"><h1>Settings</h1>
-    <section class="card" id="set-account"><h2>chess.com account</h2></section>
+    <section class="card" id="set-account"></section>
     <section class="card"><h2>Coach voice</h2>
       <label class="switch"><input type="checkbox" class="v-on"> Coach Knox talks out loud</label>
       <label class="field">Voice<select class="v-name"></select></label>
@@ -49,12 +87,19 @@ export function settingsView(view, onRemoteChange) {
 
   // chess.com account
   const paintAccount = () => {
-    const a = account(), st = stats(), box = $('#set-account');
-    box.innerHTML = '<h2>chess.com account</h2>';
-    if (!a) {
-      box.insertAdjacentHTML('beforeend', '<p class="sub">Connect your chess.com account and Knight School uses your real Elo and every game you play.</p>');
-      box.append(signInForm(() => { paintAccount(); dispatchEvent(new CustomEvent('ks-account')); }));
-      return;
+    const a = account(), st = stats(), box = $('#set-account'), s = auth.session();
+    box.innerHTML = `<h2>${s ? 'Your account' : 'Account'}</h2>`;
+    if (s) box.insertAdjacentHTML('beforeend', `<p class="sub">Signed in as <b>${esc(s.user)}</b>. Your progress saves to your account and follows you to every device.</p>`);
+    else {
+      box.insertAdjacentHTML('beforeend', '<p class="sub">Make a free account with your chess.com username and a password. Your Elo, games and progress then follow you to every device.</p>');
+      box.append(accountForm(done));
+      if (!a) {
+        const d = document.createElement('details');
+        d.innerHTML = '<summary>No account? Just connect your chess.com username on this device</summary>';
+        d.append(signInForm(done));
+        box.append(d);
+        return;
+      }
     }
     const tcs = ['rapid', 'blitz', 'bullet', 'daily'].filter(t => st?.[t]?.r);
     box.insertAdjacentHTML('beforeend', `
@@ -63,12 +108,16 @@ export function settingsView(view, onRemoteChange) {
         <a class="btn" href="${esc(a.url)}" target="_blank" rel="noopener">Profile</a></div>
       <label class="field">Main rating (your level)<select class="main-tc">
         <option value="auto">Automatic: what I play most</option>${tcs.map(t => `<option value="${t}">${t[0].toUpperCase() + t.slice(1)} · ${st[t].r}</option>`).join('')}</select></label>
-      <div class="row"><button class="cc-sync">${icon('replay')} Sync now</button><button class="cc-out">Sign out</button></div>`);
+      <div class="row"><button class="cc-sync">${icon('replay')} Sync now</button><button class="cc-out">${s ? 'Sign out' : 'Disconnect chess.com'}</button></div>`);
     $('.main-tc').value = store.get('mainTc', 'auto');
     $('.main-tc').onchange = e => store.set('mainTc', e.target.value);
     $('.cc-sync').onclick = async e => { e.target.disabled = true; e.target.textContent = 'Syncing…'; try { await refresh(true); } catch { /* shown as stale time */ } paintAccount(); };
-    $('.cc-out').onclick = () => { if (confirm('Disconnect your chess.com account from Knight School? Your lessons, puzzles and reviews stay.')) { signOut(); paintAccount(); dispatchEvent(new CustomEvent('ks-account')); } };
+    $('.cc-out').onclick = () => {
+      if (s) { if (confirm('Sign out on this device? Your progress stays saved in your account.')) { auth.signOut(); dispatchEvent(new HashChangeEvent('hashchange')); } }
+      else if (confirm('Disconnect your chess.com account from Knight School? Your lessons, puzzles and reviews stay.')) { signOut(); done(); }
+    };
   };
+  const done = () => { paintAccount(); paintSync(); dispatchEvent(new CustomEvent('ks-account')); };
   paintAccount();
 
   // voice
@@ -98,7 +147,12 @@ export function settingsView(view, onRemoteChange) {
   $('.s-on').onchange = () => { if ($('.s-on').checked !== settings.sound) toggle('sound'); };
 
   // device sync (the existing panel, rendered in place)
-  initSyncPanel(null, $('.syncbox'), onRemoteChange);
+  const paintSync = () => {
+    const box = $('.syncbox');
+    if (auth.session()) { box.innerHTML = `<h3>Sync</h3><p class="vhint">Your progress syncs through your account by itself. Last synced: ${ago(syncState().at)}.</p>`; return; }
+    initSyncPanel(null, box, onRemoteChange);
+  };
+  paintSync();
 
   // AI coach key
   const ai = $('.aibox');

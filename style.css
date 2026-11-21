@@ -382,3 +382,11 @@ coords { font-family: var(--font); font-weight: 800; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* account form */
+.acctform { display: flex; flex-direction: column; gap: .35rem; max-width: 420px; }
+.acctform .seg { margin-bottom: .5rem; }
+.acctform label { margin: .3rem 0 0; }
+.acctform > .primary { margin-top: .6rem; align-self: flex-start; }
+.connect .quick { margin-top: .4rem; }
+.connect .quick .signin { margin-top: .6rem; }

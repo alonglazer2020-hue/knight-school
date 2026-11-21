@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Sync without an account: a secret 20-character code.
+    match /sync/{code}/k/{item} {
+      allow get, list: if code.matches('^[2-9A-HJ-NP-Z]{20}$');
+      allow create, update: if code.matches('^[2-9A-HJ-NP-Z]{20}$') && request.resource.data.keys().hasOnly(['k', 'v', 't']);
+    }
+    // Knight School accounts: only you can read or write your own progress.
+    match /users/{uid}/k/{item} {
+      allow get, list: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid && request.resource.data.keys().hasOnly(['k', 'v', 't']);
+    }
+  }
+}

@@ -8,7 +8,7 @@ import * as store from './store.js';
 import { openChat, dailyNote } from './ai-coach.js';
 import { level, levelNews, today } from './levels.js';
 import { account, stats, games as ccGames, history, lastSync, syncing } from './chesscom.js';
-import { signInForm } from './settings.js';
+import { signInForm, accountForm } from './settings.js';
 import { icon } from './icons.js';
 
 const WEAK = {
@@ -74,8 +74,9 @@ export function coachHome(view) {
       ${acc ? `<span class="pill">${icon('check')} Connected to chess.com</span><span class="m synced">${syncing() ? 'Loading your games…' : `Games synced ${ago(lastSync())}`}</span>` : ''}
     </header>
 
-    ${acc ? '' : `<section class="card connect"><div><h2>Connect your chess.com account</h2>
-      <p class="sub">Type your chess.com username. Knight School pulls in your Elo and every game you play, and builds your training from them.</p></div><div class="formslot"></div></section>`}
+    ${acc ? '' : `<section class="card connect"><div><h2>Sign in with your chess.com username</h2>
+      <p class="sub">Make a free Knight School account with your chess.com username and a password. Knight School pulls in your Elo and every game you play, builds your training from them, and your progress follows you to every device.</p>
+      <details class="quick"><summary>No account? Just connect your chess.com username</summary><div class="quickslot"></div></details></div><div class="formslot"></div></section>`}
 
     <section class="card ratings">
       <div class="main-rating">
@@ -116,7 +117,8 @@ export function coachHome(view) {
   const $ = q => view.querySelector(q);
   $('.coachslot').append(coachBox());
   $('.b-talk').onclick = () => openChat();
-  if (!acc) $('.formslot').append(signInForm(() => dispatchEvent(new HashChangeEvent('hashchange')))); // re-route: sidebar and page
+  const reroute = () => dispatchEvent(new HashChangeEvent('hashchange')); // redraw sidebar and page
+  if (!acc) { $('.formslot').append(accountForm(reroute)); $('.quickslot').append(signInForm(reroute)); }
   const err = m => { $('.plan-err').textContent = m; };
   bindGameRows(view, err);
   $('.act-review')?.addEventListener('click', async e => {

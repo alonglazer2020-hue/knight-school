@@ -1,6 +1,6 @@
 // Tiny localStorage wrapper; every read/write survives private mode / quota errors.
 // Each synced key also gets a "last changed" timestamp (in ks.__t) so sync.js can merge devices.
-const LOCAL_ONLY = new Set(['sound', 'voice', 'voiceName', 'rate', 'sync', '__t', 'aiKey', 'aiModel', 'beltSeen', 'ccGames', 'ccMonths', 'ccStats', 'ccSync', 'levelSeen']); // per-device settings, never synced
+const LOCAL_ONLY = new Set(['sound', 'voice', 'voiceName', 'rate', 'sync', '__t', 'aiKey', 'aiModel', 'beltSeen', 'ccGames', 'ccMonths', 'ccStats', 'ccSync', 'levelSeen', 'auth']); // per-device settings, never synced
 
 function rawGet(k) { try { return localStorage.getItem('ks.' + k); } catch { return null; } }
 function rawSet(k, v) { try { localStorage.setItem('ks.' + k, v); return true; } catch { return false; } }
@@ -42,6 +42,11 @@ export function snapshot() {
   const s = stamps(), out = {};
   for (const k of new Set([...syncedKeys(), ...Object.keys(s)])) if (!LOCAL_ONLY.has(k)) out[k] = { v: rawGet(k), t: s[k] ?? 0 };
   return out;
+}
+// Sign-out: forget this player's progress and chess.com caches on this device (their account keeps a copy).
+export function clearSynced() {
+  for (const k of syncedKeys()) rawDel(k);
+  for (const k of ['__t', 'sync', 'ccGames', 'ccMonths', 'ccStats', 'ccSync', 'levelSeen', 'beltSeen']) rawDel(k);
 }
 export function applyRemote(key, v, t) {
   if (LOCAL_ONLY.has(key)) return;
