@@ -15,13 +15,16 @@ export const KOKORO_VOICES = [
 ];
 
 // The model runs in a Web Worker (kokoro-worker.js) so the page stays clickable while it loads and speaks.
-const call = workerClient(new URL('./kokoro-worker.js', import.meta.url));
+let speed = null;
+export const onSpeed = fn => { speed = fn; }; // fn(ratio) after every sentence
+const call = workerClient(new URL('./kokoro-worker.js', import.meta.url), r => speed?.(r));
+export const dropKokoro = () => call.drop();
 let loading = null;
 
 // Load the model once; onProgress(0..1) while it downloads.
 export function ensureKokoro(onProgress) {
-  return (loading ??= call({}, onProgress).catch(e => { loading = null; throw e; }));
+  return (loading ??= call({ keep: true }, onProgress).catch(e => { loading = null; throw e; }));
 }
 
 // Returns a WAV blob; the worker runs one job at a time.
-export const synthKokoro = (text, voice) => call({ text, voice });
+export const synthKokoro = (text, voice, keep = false) => call({ text, voice, keep });

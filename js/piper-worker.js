@@ -6,8 +6,13 @@ const load = () => (lib ??= import(LIB).catch(e => { lib = null; throw e; }));
 
 // One job at a time: the ONNX session can't run two inferences at once.
 let queue = Promise.resolve();
-onmessage = ({ data: { id, voice, text } }) => {
+let dropUpTo = 0, lastId = 0;
+onmessage = ({ data }) => {
+  if (data.drop) { dropUpTo = lastId; return; }
+  const { id, voice, text, keep } = data;
+  lastId = id;
   queue = queue.then(async () => {
+    if (!keep && id <= dropUpTo) return postMessage({ id, error: 'dropped' });
     try {
       const t = await load();
       if (!text) { // download the voice model once (cached in the browser's private storage)

@@ -136,7 +136,8 @@ export function settingsView(view, onRemoteChange) {
   const fill = () => {
     const vs = voices();
     const opt = p => ([id, label]) => `<option value="${p}:${id}">${label}</option>`;
-    vSel.innerHTML = `<optgroup label="Natural voices (most human)">${KOKORO_VOICES.map(opt('ko')).join('')}</optgroup>`
+    vSel.innerHTML = '<option value="auto">Auto: natural voice if this device is fast enough, else Ryan</option>'
+      + `<optgroup label="Natural voices (most human, slow on phones)">${KOKORO_VOICES.map(opt('ko')).join('')}</optgroup>`
       + `<optgroup label="HD AI voices">${AI_VOICES.filter(v => v[2]).map(opt('ai')).join('')}</optgroup>`
       + `<optgroup label="AI voices (lighter, for phones)">${AI_VOICES.filter(v => !v[2]).map(opt('ai')).join('')}</optgroup>`
       + (vs.length ? `<optgroup label="Built into this browser (robotic)">${vs.map(v => `<option value="br:${q(v.name)}">${q(v.name.replace(/^Microsoft |^Google /, ''))}</option>`).join('')}</optgroup>` : '');

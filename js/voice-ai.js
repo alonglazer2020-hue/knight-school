@@ -21,12 +21,13 @@ export const AI_VOICES = [
 ];
 
 const call = workerClient(new URL('./piper-worker.js', import.meta.url));
+export const dropPiper = () => call.drop();
 const downloads = {};
 
 // Download the model once; onProgress(0..1) is called while it downloads.
 export function ensureVoice(id, onProgress) {
-  return (downloads[id] ??= call({ voice: id }, onProgress).catch(e => { delete downloads[id]; throw e; }));
+  return (downloads[id] ??= call({ voice: id, keep: true }, onProgress).catch(e => { delete downloads[id]; throw e; }));
 }
 
 // A WAV blob; the worker runs one job at a time.
-export const synth = (text, id) => call({ text, voice: id });
+export const synth = (text, id, keep = false) => call({ text, voice: id, keep });
