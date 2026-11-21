@@ -57,8 +57,10 @@ export function coachHome(view) {
   const newest = recent[0], unreviewed = newest && !store.get('rv.' + newest.key, null);
   const target = recent.find(g => !store.get('rv.' + g.key, null)); // the newest game you haven't reviewed yet
   const steps = [
-    target && { act: 'review', ic: 'chart', t: target === newest ? 'Review your last game' : 'Review a recent game', m: `${target.res === 'W' ? 'Won' : target.res === 'L' ? 'Lost' : 'Draw'} vs ${target.opp} · ${cap(target.tc)} · ${ago(target.t)} · about 5 min`, ok: false },
-    acc && !target && recent.length && { href: '#/review', ic: 'chart', t: 'All recent games reviewed', m: 'Play a game on chess.com and it shows up here', ok: true },
+    // one review a day: once a game is reviewed today the step is done, instead of moving on to the next older game
+    acc && t.reviewed && { href: '#/review', ic: 'chart', t: 'Reviewed a game today', m: target ? 'Want more? Your other games are on the Review page' : 'Play a game on chess.com and it shows up here', ok: true },
+    !t.reviewed && target && { act: 'review', ic: 'chart', t: target === newest ? 'Review your last game' : 'Review a recent game', m: `${target.res === 'W' ? 'Won' : target.res === 'L' ? 'Lost' : 'Draw'} vs ${target.opp} · ${cap(target.tc)} · ${ago(target.t)} · about 5 min`, ok: false },
+    acc && !t.reviewed && !target && recent.length && { href: '#/review', ic: 'chart', t: 'All recent games reviewed', m: 'Play a game on chess.com and it shows up here', ok: true },
     !acc && { href: '#/review', ic: 'chart', t: 'Review a game', m: 'Connect chess.com above, or paste a game on the Review page', ok: t.reviewed },
     due && { href: '#/puzzles?mode=mistakes', ic: 'retry', t: `Fix ${Math.min(due, 5)} mistake${due > 1 ? 's' : ''} from your games`, m: 'They come back until you solve them twice · about 5 min', ok: (t.drilled ?? 0) >= Math.min(due, 5) },
     { href: `#/puzzles?theme=${theme}`, ic: 'puzzle', t: `10 puzzles: ${THEMES[theme]?.label ?? 'Mixed'}`, m: `${top ? `Your weak spot: ${top.label.toLowerCase()}` : `Picked for ${lv.rating} Elo`} · about 10 min`, ok: t.solved >= 10, prog: `${Math.min(t.solved, 10)}/10` },
