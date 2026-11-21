@@ -15,9 +15,7 @@ export const KOKORO_VOICES = [
 ];
 
 // The model runs in a Web Worker (kokoro-worker.js) so the page stays clickable while it loads and speaks.
-let speed = null;
-export const onSpeed = fn => { speed = fn; }; // fn(ratio) after every sentence
-const call = workerClient(new URL('./kokoro-worker.js', import.meta.url), r => speed?.(r));
+const call = workerClient(new URL('./kokoro-worker.js', import.meta.url));
 export const dropKokoro = () => call.drop();
 let loading = null;
 

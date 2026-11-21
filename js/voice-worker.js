@@ -1,7 +1,7 @@
 // Talk to a voice engine that runs in a Web Worker. Voice models take seconds of CPU per sentence;
 // on the page's own thread that froze clicks, scrolling and move sounds (worst on phones).
 // Messages: page -> worker { id, ...msg }; worker -> page { id, progress } while working, then { id, blob } or { id, error }.
-export function workerClient(url, onSpeed) {
+export function workerClient(url) {
   let worker = null, seq = 0;
   const pending = new Map();
   function call(msg, onProgress) {
@@ -11,7 +11,6 @@ export function workerClient(url, onSpeed) {
         const p = pending.get(data.id);
         if (!p) return;
         if (data.progress != null) return p.onProgress?.(data.progress);
-        if (data.ratio) onSpeed?.(data.ratio);
         pending.delete(data.id);
         if (data.error) p.reject(new Error(data.error)); else p.resolve(data.blob);
       };

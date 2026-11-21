@@ -46,9 +46,10 @@ function paintMe() {
 }
 
 const view = document.getElementById('view');
-function route() {
+// background: redraw with new data (sync, chess.com) without scrolling up or cutting the coach off
+function route(e, background = false) {
   cancel();
-  hush();
+  if (!background) hush();
   window.onkeydown = null;
   setPage(null); // each page tells the AI coach what's on screen
   rememberPage(location.hash);
@@ -57,8 +58,9 @@ function route() {
   const params = new URLSearchParams(query);
   document.querySelectorAll('nav a').forEach(a => { const on = a.dataset.tab === tab; a.classList.toggle('active', on); on ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'); });
   paintMe();
+  const y = window.scrollY;
   view.innerHTML = '';
-  window.scrollTo(0, 0);
+  if (!background) window.scrollTo(0, 0);
   if (tab === 'learn') arg ? lessonView(view, arg) : learnIndex(view);
   else if (tab === 'puzzles') puzzleView(view, params);
   else if (tab === 'review') arg ? reviewGame(view, decodeURIComponent(arg)) : reviewIndex(view);
@@ -69,6 +71,7 @@ function route() {
   else if (tab === 'terms') termsView(view);
   else if (tab === 'rating') ratingView(view, params);
   else coachHome(view);
+  if (background) window.scrollTo(0, y); // after the redraw: emptying the page had already snapped it to the top
 }
 initChat(document.getElementById('tChat'), document.getElementById('chatPanel'));
 window.addEventListener('hashchange', route);
@@ -80,7 +83,7 @@ function onRemoteChange() {
   paintMe();
   const [path] = location.hash.slice(2).split('?');
   const [tab = 'coach', arg] = path.split('/');
-  if (!arg && !['puzzles', 'settings'].includes(tab)) route();
+  if (!arg && !['puzzles', 'settings'].includes(tab)) route(null, true);
 }
 startAutoSync(onRemoteChange);
 

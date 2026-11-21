@@ -15,7 +15,7 @@ const load = id => (tts ??= (loadId = id, KokoroTTS.from_pretrained(MODEL, {
   },
 }).catch(e => { tts = null; throw e; })));
 
-// One job at a time, in order: { id, text?, voice?, keep? } -> { id, blob, ratio } (no text = just load the model).
+// One job at a time, in order: { id, text?, voice?, keep? } -> { id, blob } (no text = just load the model).
 let queue = Promise.resolve();
 let dropUpTo = 0, lastId = 0;
 onmessage = ({ data }) => {
@@ -27,9 +27,7 @@ onmessage = ({ data }) => {
     try {
       const t = await load(id);
       if (!text) return postMessage({ id, blob: null });
-      const start = performance.now(), a = await t.generate(text, { voice });
-      // ratio = seconds to build / seconds of speech; above 1 the coach would pause between sentences
-      postMessage({ id, blob: a.toBlob(), ratio: (performance.now() - start) / 1000 / (a.audio.length / a.sampling_rate) });
+      postMessage({ id, blob: (await t.generate(text, { voice })).toBlob() });
     } catch (e) { postMessage({ id, error: String(e?.message ?? e) }); }
   });
 };

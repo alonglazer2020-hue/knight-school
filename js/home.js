@@ -45,6 +45,7 @@ function spark(h) {
     <polygon points="0,${ht} ${pts} ${w},${ht}" class="area"/><polyline points="${pts}" class="line"/></svg>`;
 }
 
+let greeted = ''; // the last greeting the coach said out loud
 export function coachHome(view) {
   const acc = account(), st = stats(), lv = level();
   const weak = weaknesses(), top = weak[0];
@@ -141,7 +142,8 @@ export function coachHome(view) {
   else if (unreviewed) msg = `New game against ${newest.opp}. Let's review it while it's fresh.`;
   else if (top) msg = `In your games, the thing that keeps costing you is ${top.label.toLowerCase()}. ${top.advice}`;
   else msg = `You're ${lv.toGo} points from ${lv.goal}. At your level the focus is ${lv.band.focus.toLowerCase()}.`;
-  say(msg, news ? 'happy' : '');
+  say(msg, news ? 'happy' : '', { quiet: msg === greeted }); // say each greeting once, not on every redraw
+  greeted = msg;
   if (news) sfx.win();
 
   // The AI coach's note for today, when it's connected.

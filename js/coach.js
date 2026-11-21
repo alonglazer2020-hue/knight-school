@@ -1,7 +1,7 @@
 // Coach Knox: the speech bubble, the voice (Web Speech API) and synthesized sound effects (Web Audio).
 import * as store from './store.js';
 import { AI_VOICES, ensureVoice, synth, dropPiper } from './voice-ai.js';
-import { KOKORO_VOICES, ensureKokoro, synthKokoro, dropKokoro, onSpeed } from './voice-kokoro.js';
+import { KOKORO_VOICES, ensureKokoro, synthKokoro, dropKokoro } from './voice-kokoro.js';
 import { icon } from './icons.js';
 
 let box = null;
@@ -35,14 +35,15 @@ const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&
 
 export const lastSaid = () => lastText;
 
-export function say(text, mood = '') {
+// quiet: show the words without saying them (the coach already said this line)
+export function say(text, mood = '', { quiet = false } = {}) {
   lastText = text;
   if (!box) return;
   box.querySelector('.text').innerHTML = esc(text).replace(SAN_RE, '<b>$&</b>');
   box.dataset.mood = '';
   void box.offsetWidth; // restart the mood animation
   box.dataset.mood = mood;
-  speak(text);
+  if (!quiet) speak(text);
 }
 
 // "Nxe5+" -> "knight takes e5, check" so the voice reads moves like a human.
@@ -76,11 +77,12 @@ function currentVoice() {
 
 // settings.voiceName is "ai:<piper id>" or "br:<browser voice name>"
 export { AI_VOICES };
-let token = 0;
+let token = 0, tapped = false;
 const audio = new Audio();
 audio.preservesPitch = true;
 // iOS only lets audio play after a tap; unlock our single <audio> element on the first one.
 addEventListener('pointerdown', () => {
+  tapped = true;
   if (settings.sound) try { ctx(); } catch { /* no Web Audio */ } // phones only allow sound effects after a tap too
   audio.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
   audio.play().catch(() => {});
@@ -88,26 +90,18 @@ addEventListener('pointerdown', () => {
 
 function voiceStatus(msg) { document.querySelectorAll('.vstatus').forEach(e => { e.textContent = msg; }); }
 
-// Auto: the natural voice where this device builds speech faster than it speaks it, else the fast Ryan voice.
-// The natural voice is timed on every sentence (onSpeed); phones start on Ryan (they measured 3-5x too slow).
-const FAST = 'ai:en_US-ryan-medium', NATURAL = 'ko:af_heart';
-const isPhone = () => navigator.userAgentData?.mobile ?? /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
-export function voiceNow() {
-  if (settings.voiceName !== 'auto') return settings.voiceName;
-  return (store.get('koSlow', null) ?? isPhone()) ? FAST : NATURAL;
-}
-onSpeed(r => {
-  const s = [...store.get('koSpeed', []), r].slice(-5);
-  store.set('koSpeed', s);
-  if (s.length >= 2) store.set('koSlow', s.reduce((a, b) => a + b, 0) / s.length > 1);
-});
+// Auto = the fast Ryan voice. The natural voices build speech slower than real time even on a fast PC
+// (1.75x measured; phones 3-5x worse), so they pause between sentences; players can still pick one in Settings.
+const FAST = 'ai:en_US-ryan-medium';
+export const voiceNow = () => (settings.voiceName === 'auto' ? FAST : settings.voiceName);
 const isReady = v => store.get('voicesReady', []).includes(v) || (v.startsWith('ko:') && store.get('koReady', false));
 const markReady = v => { if (!isReady(v)) store.set('voicesReady', [...store.get('voicesReady', []), v]); };
 
 // AI voices are a one-time 60-90 MB download: on mobile data or data saver, wait until the player presses Test voice (force).
 const onMobileData = () => { const c = navigator.connection; return !!c && (c.saveData || c.type === 'cellular'); };
 export function speak(text, { force = false } = {}) {
-  if (!settings.voice || !text) return;
+  // Browsers block sound until the first tap, so a line before it would download the voice and stay silent.
+  if (!settings.voice || !text || !tapped) return;
   hush();
   const my = ++token, v = voiceNow();
   if (/^(ko|ai):/.test(v) && !force && !isReady(v) && onMobileData()) {
