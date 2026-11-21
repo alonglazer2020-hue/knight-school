@@ -1,5 +1,7 @@
 import { Chess } from '../vendor/chess.js';
 import { setPage } from './ai-coach.js';
+import { bumpToday, BELTS, rank, stripeNews } from './belts.js';
+import { icon } from './icons.js';
 import { Board, arrow, circle, uciOf } from './board.js';
 import { coachBox, say, sfx } from './coach.js';
 import { COURSES, ALL_LESSONS } from './lessons-data.js';
@@ -13,14 +15,31 @@ const fenOf = s => { if (s.fen) return s.fen; const c = new Chess(); for (const 
 export const doneSet = () => new Set(store.get('done', []));
 export const nextLesson = () => ALL_LESSONS.find(l => !doneSet().has(l.id));
 
+// The curriculum as a belt path: each belt's lessons are stripes toward it.
+const PATH = [
+  ['yellow', ['pieces', 'check', 'special']],
+  ['orange', ['values', 'principles', 'scholar-defense']],
+  ['green', ['fork', 'pin', 'discovered']],
+  ['blue', ['mates', 'endgame']],
+  ['purple', ['italian', 'london', 'queens-gambit', 'caro-kann', 'slav']],
+];
 export function learnIndex(view) {
   const done = doneSet();
-  view.innerHTML = `<div class="page"><h1>Learn</h1>
-    <p class="sub">${done.size} of ${ALL_LESSONS.length} lessons complete. Every lesson is interactive and Coach Knox talks you through it.</p>
-    ${COURSES.map(c => `<section class="course"><h2><span class="ci">${c.icon}</span>${c.title}</h2><div class="cards">
-      ${c.lessons.map(l => `<a class="card lesson ${done.has(l.id) ? 'done' : ''}" href="#/learn/${l.id}">
-        <span class="t">${l.title}</span><span class="m">${done.has(l.id) ? '✓ Done' : l.steps.length + ' steps'}</span></a>`).join('')}
-    </div></section>`).join('')}</div>`;
+  const nxt = nextLesson();
+  view.innerHTML = `<div class="page learn"><h1>Learn</h1>
+    <p class="sub">${done.size} of ${ALL_LESSONS.length} lessons done. Each lesson is interactive: you move the pieces, Coach Knox talks you through it, and it counts as a stripe toward your next belt.</p>
+    ${PATH.map(([beltId, ids]) => {
+      const b = BELTS.find(x => x.id === beltId);
+      const n = ids.filter(id => done.has(id)).length;
+      return `<section class="beltsec" style="--belt:${b.color}">
+      <h2><span class="swatch"></span>${b.name}<span class="count">${n} of ${ids.length} done</span></h2>
+      <p class="sub">${b.about}</p>
+      <ol class="lessons">${ids.map(id => ALL_LESSONS.find(l => l.id === id)).map(l => `<li><a class="lesson ${done.has(l.id) ? 'done' : ''} ${nxt?.id === l.id ? 'next' : ''}" href="#/learn/${l.id}">
+        <span class="st">${done.has(l.id) ? icon('check') : nxt?.id === l.id ? icon('play') : ''}</span>
+        <span class="t">${l.title}</span>
+        <span class="m">${done.has(l.id) ? 'Done' : nxt?.id === l.id ? 'Up next' : `${l.steps.length} steps`}</span>${icon('arrow', 'go')}</a></li>`).join('')}</ol>
+    </section>`;
+    }).join('')}</div>`;
 }
 
 export function lessonView(view, id) {
@@ -29,11 +48,11 @@ export function lessonView(view, id) {
   view.innerHTML = `<div class="play">
     <div class="boardcol"><div class="board"></div></div>
     <aside class="side">
-      <div class="crumb"><a href="#/learn">← Lessons</a></div>
+      <div class="crumb"><a href="#/learn">${icon('back')} Lessons</a></div>
       <h2>${lesson.title}</h2>
       <div class="dots"></div>
       <div class="coachslot"></div>
-      <div class="btns"><button class="b-back">Back</button><button class="b-hint">Hint</button><button class="b-next primary">Next</button></div>
+      <div class="btns"><button class="b-back">${icon('back')} Back</button><button class="b-hint">${icon('bulb')} Hint</button><button class="b-next primary">Next</button></div>
     </aside></div>`;
   const $ = s => view.querySelector(s);
   $('.coachslot').append(coachBox());
@@ -115,11 +134,13 @@ export function lessonView(view, id) {
 
   $('.b-next').onclick = () => {
     if (i < lesson.steps.length - 1) { i++; return show(); }
-    const done = doneSet(); done.add(lesson.id); store.set('done', [...done]);
+    const before = rank();
+    const done = doneSet(); done.add(lesson.id); store.set('done', [...done]); bumpToday('lesson', true);
+    const news = stripeNews(before);
     sfx.win();
     const nxt = nextLesson();
-    say(`Lesson complete! ${nxt ? `Up next: ${nxt.title}.` : 'You finished every lesson. Time for puzzles!'}`, 'happy');
-    $('.btns').innerHTML = `<a class="btn" href="#/learn">All lessons</a>${nxt ? `<a class="btn primary" href="#/learn/${nxt.id}">Next lesson →</a>` : '<a class="btn primary" href="#/puzzles">Puzzles →</a>'}`;
+    say(`Lesson complete!${news} ${nxt ? `Up next: ${nxt.title}.` : 'You finished every lesson. Time for puzzles!'}`, 'happy');
+    $('.btns').innerHTML = `<a class="btn" href="#/learn">All lessons</a>${nxt ? `<a class="btn primary" href="#/learn/${nxt.id}">Next lesson ${icon('arrow')}</a>` : `<a class="btn primary" href="#/puzzles">Puzzles ${icon('arrow')}</a>`}`;
   };
   $('.b-back').onclick = () => { if (i > 0) { i--; show(); } };
   $('.b-hint').onclick = () => {

@@ -200,7 +200,7 @@ async function N(e, m) {
       "--espeak_data",
       "/espeak-ng-data"
     ]);
-  }), r = 0, s = i.audio.sample_rate, d = i.inference.noise_scale, g = i.inference.length_scale, U = i.inference.noise_w, y = await (SESSIONS[n] ??= f(`${u}/${n}`, m).then((k) => k.arrayBuffer()).then((b) => _.InferenceSession.create(b))), w = {
+  }), r = 0, s = i.audio.sample_rate, d = i.inference.noise_scale, g = i.inference.length_scale, U = i.inference.noise_w, y = await (SESSIONS[n] ??= f(`${u}/${n}`, m).then((k) => k.arrayBuffer()).then((b) => _.InferenceSession.create(b)).catch((e) => { delete SESSIONS[n]; throw e; })), w = {
     input: new _.Tensor("int64", t, [1, t.length]),
     input_lengths: new _.Tensor("int64", [t.length]),
     scales: new _.Tensor("float32", [d, g, U])

@@ -5,16 +5,17 @@ import { winPct } from './engine.js';
 import { uciOf, toMoveArg, epd } from './chessutil.js';
 
 export const CLASSES = {
-  brilliant: { label: 'Brilliant', sym: '!!', color: '#1baca6' },
-  great: { label: 'Great', sym: '!', color: '#5c8bb0' },
-  best: { label: 'Best', sym: '★', color: '#81b64c' },
-  excellent: { label: 'Excellent', sym: '✓', color: '#96bc4b' },
-  good: { label: 'Good', sym: '✓', color: '#95b776' },
-  book: { label: 'Book', sym: '≡', color: '#a88865' },
-  inaccuracy: { label: 'Inaccuracy', sym: '?!', color: '#f7c631' },
-  mistake: { label: 'Mistake', sym: '?', color: '#ffa459' },
-  miss: { label: 'Miss', sym: '✗', color: '#ff7769' },
-  blunder: { label: 'Blunder', sym: '??', color: '#fa412d' },
+  // A severity scale: good moves in canvas and ink, problems in amber to red. `icon` names an icons.js icon used instead of text.
+  brilliant: { label: 'Brilliant', sym: '!!', color: '#F1ECE0', ink: '#1B2033', mark: '#F1ECE0' },
+  great: { label: 'Great', sym: '!', color: '#F1ECE0', ink: '#1B2033', mark: '#F1ECE0' },
+  best: { label: 'Best', sym: 'best', icon: 'star', color: '#DCE0EC', ink: '#1B2033' },
+  excellent: { label: 'Excellent', sym: 'ok', icon: 'check', color: '#B8C0D8', ink: '#1B2033' },
+  good: { label: 'Good', sym: 'ok', icon: 'check', color: '#929CBE', ink: '#1B2033' },
+  book: { label: 'Book', sym: 'book', icon: 'book', color: '#5E6B98', ink: '#FFFFFF' },
+  inaccuracy: { label: 'Inaccuracy', sym: '?!', color: '#F2B04A', ink: '#1B2033' },
+  mistake: { label: 'Mistake', sym: '?', color: '#FF8A78', ink: '#1B2033' },
+  miss: { label: 'Miss', sym: 'miss', icon: 'close', color: '#FF8A78', ink: '#1B2033' },
+  blunder: { label: 'Blunder', sym: '??', color: '#C9455A', ink: '#FFFFFF' },
 };
 export const BAD = ['inaccuracy', 'mistake', 'miss', 'blunder'];
 const VAL = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };

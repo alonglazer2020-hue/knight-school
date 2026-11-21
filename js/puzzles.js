@@ -5,6 +5,8 @@ import { analyse, cancel, winPct } from './engine.js';
 import { Chess } from '../vendor/chess.js';
 import * as store from './store.js';
 import { setPage, sanLine } from './ai-coach.js';
+import { bumpToday, rank, stripeNews, beltSvg } from './belts.js';
+import { icon } from './icons.js';
 
 export const THEMES = {
   mix: { label: 'Mixed', tip: 'Look at every check, capture and threat.' },
@@ -52,9 +54,10 @@ export function puzzleView(view, params) {
     <div class="boardcol"><div class="board"></div></div>
     <aside class="side">
       <div class="seg"><button data-mode="lichess">Puzzles</button><button data-mode="mistakes">My mistakes <span class="mcount"></span></button></div>
+      <a class="rankline" href="#/coach"></a>
       <div class="pinfo"><span class="rating"></span><span class="streak"></span></div>
       <div class="coachslot"></div>
-      <div class="btns"><button class="b-hint">Hint</button><button class="b-sol">Solution</button><button class="b-next primary">Next puzzle</button></div>
+      <div class="btns"><button class="b-hint">${icon('bulb')} Hint</button><button class="b-sol">${icon('eye')} Solution</button><button class="b-next primary">Next puzzle ${icon('arrow')}</button></div>
       <div class="filters">
         <label>Theme</label><div class="chips">${Object.entries(THEMES).map(([k2, t]) => `<button class="chip" data-theme="${k2}">${t.label}</button>`).join('')}</div>
         <label>Difficulty</label><select class="diff">${DIFFS.map(d => `<option>${d}</option>`).join('')}</select>
@@ -71,8 +74,12 @@ export function puzzleView(view, params) {
     $('.filters').hidden = mode !== 'lichess';
     $('.mcount').textContent = `(${mistakes().length})`;
     const st = store.get('pstats', { solved: 0, failed: 0, streak: 0 });
-    $('.rating').textContent = mode === 'lichess' ? `Your puzzle rating: ${Math.round(store.get('prating', 800))}` : 'Positions where you went wrong in your own games';
-    $('.streak').textContent = st.streak > 1 ? `🔥 ${st.streak} in a row` : '';
+    $('.rating').innerHTML = mode === 'lichess' ? `Puzzle rating <b>${Math.round(store.get('prating', 800))}</b>` : 'Positions where you went wrong in your own games';
+    // Carry the belt into the work: the stripe these puzzles are earning.
+    const rk = rank();
+    const s = rk.stripes.find(x => !x.ok && x.go.startsWith('#/puzzles')) ?? rk.stripes.find(x => !x.ok);
+    $('.rankline').innerHTML = `${beltSvg(rk.belt, rk.earned, { width: 56, height: 12, cls: 'belt mini' })}<span>${s ? `Toward <b>${rk.next.name}</b>: ${s.label}${s.need ? ` (${s.have}/${s.need})` : ''}` : `<b>${rk.belt.name}</b>`}</span>`;
+    $('.streak').innerHTML = st.streak > 1 ? `${icon('flame')} ${st.streak} in a row` : '';
   }
 
   async function next() {
@@ -87,7 +94,10 @@ export function puzzleView(view, params) {
         board.load('4k3/8/8/8/8/8/8/4K3 w - - 0 1', { interactive: false });
         return say('No saved mistakes yet. Review one of your chess.com games and I will collect every mistake you made, so you can practice them here.');
       }
-      const m = list[Math.floor(Math.random() * list.length)];
+      // Spaced repetition: positions that are due come first; a solved one comes back tomorrow.
+      const due = list.filter(x => !x.due || x.due <= Date.now());
+      const pool = due.length ? due : list;
+      const m = pool[Math.floor(Math.random() * pool.length)];
       p = { ...m, solution: [m.best], mistake: true };
     } else {
       say('Finding a puzzle...');
@@ -116,30 +126,35 @@ Solution: ${sanLine(p.fen, p.solution, 12)}. Do NOT reveal the solution moves un
   function finish(win) {
     board.setInteractive(false);
     $('.b-next').disabled = false;
+    const before = rank();
     const st = store.get('pstats', { solved: 0, failed: 0, streak: 0, byTheme: {} });
     st.byTheme ??= {};
     const clean = win && !failed && hintLevel < 2;
     if (clean) { st.solved++; st.streak++; } else { st.failed++; st.streak = 0; }
     for (const t of p.themes ?? []) { const b = (st.byTheme[t] ??= { s: 0, f: 0 }); clean ? b.s++ : b.f++; }
+    if (win && !p.mistake) bumpToday('solved');
+    if (p.mistake) {
+      const list = mistakes();
+      const m = list.find(x => x.fen === p.fen);
+      if (m) {
+        if (win) bumpToday('drilled');
+        m.streak = clean ? (m.streak ?? 0) + 1 : 0;
+        m.due = Date.now() + (clean ? 20 * 3600e3 : 0); // got it: see it again tomorrow; missed it: it stays due
+        // mastered after two clean solves (on different days)
+        if (m.streak >= 2) { st.fixed = (st.fixed ?? 0) + 1; bumpToday('fixed'); }
+        store.set('mistakes', m.streak >= 2 ? list.filter(x => x !== m) : list);
+      }
+    }
     store.set('pstats', st);
     if (p.rating && !p.mistake) {
       const r = store.get('prating', 800), e = 1 / (1 + 10 ** ((p.rating - r) / 400));
       store.set('prating', Math.max(100, r + 24 * ((clean ? 1 : 0) - e)));
     }
-    if (p.mistake) {
-      const list = mistakes();
-      const m = list.find(x => x.fen === p.fen);
-      if (m) {
-        m.streak = clean ? (m.streak ?? 0) + 1 : 0;
-        // mastered after two clean solves
-        store.set('mistakes', m.streak >= 2 ? list.filter(x => x !== m) : list);
-      }
-    }
     paint();
     if (win) {
       sfx.win();
       const tip = (p.themes ?? []).map(t => THEMES[t]).find(Boolean);
-      say(`${pick(SOLVED)} ${p.mistake ? (p.note ?? '') : tip && tip !== THEMES.mix ? `That was a ${tip.label.toLowerCase().replace(/s$/, '')} puzzle. ${tip.tip}` : ''}`, 'happy');
+      say(`${pick(SOLVED)}${stripeNews(before)} ${p.mistake ? (p.note ?? '') : tip && tip !== THEMES.mix ? `That was a ${tip.label.toLowerCase().replace(/s$/, '')} puzzle. ${tip.tip}` : ''}`, 'happy');
     }
   }
 
@@ -173,7 +188,11 @@ Solution: ${sanLine(p.fen, p.solution, 12)}. Do NOT reveal the solution moves un
     hintLevel++;
     const mv = toMoveArg(p.solution[k]);
     const tip = (p.themes ?? []).map(t => THEMES[t]).find(Boolean);
-    if (hintLevel === 1 && tip) return say(`Hint: ${tip.tip}`);
+    if (hintLevel === 1) { // teach the routine before the answer: checks, captures, threats
+      const mvObj = new Chess(board.chess.fen()).move(mv);
+      const kind = mvObj.san.includes('+') || mvObj.san.includes('#') ? 'a check' : mvObj.captured ? 'a capture' : 'a threat, a move that attacks something';
+      return say(`Think like a coach: checks, captures, threats. The answer here is ${kind}.${tip && tip !== THEMES.mix ? ' ' + tip.tip : ''}`);
+    }
     if (hintLevel <= 2) { board.shapes([circle(mv.from, 'yellow')]); return say('Hint: move the highlighted piece.'); }
     board.shapes([arrow(p.solution[k], 'yellow')]);
     say('Here is the move. Play it!');

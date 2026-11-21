@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "radial-halo",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-11-20T21:54:46.376Z",
+        "reason": "Claude triage: only radial-gradients are in vendored chessground.brown.css (move-destination dots and red check glow on the king's square) - functional board UI, not a decorative page halo; same finding suppressed earlier under the Downloads-relative path"
+      }
+    ]
+  }
+}

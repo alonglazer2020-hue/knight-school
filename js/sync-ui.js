@@ -1,4 +1,4 @@
-// The ☁️ panel: turn sync on (new code), join with a code from another device, or turn it off.
+// The sync panel: turn sync on (new code), join with a code from another device, or turn it off.
 import { state, pretty, createCode, joinCode, leave, syncNow } from './sync.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -15,15 +15,15 @@ export function initSyncPanel(button, panel, onRemoteChange) {
     button.classList.toggle('off', !s.code);
     button.classList.toggle('warn', !!(s.code && s.error));
     panel.innerHTML = s.code ? `
-      <h3>☁️ Sync is on</h3>
+      <h3>Sync is on</h3>
       <p class="vhint">Your progress is saved online and shared with every device that uses this code:</p>
       <div class="code">${pretty(s.code)}</div>
       <button class="s-copy">Copy code</button>
-      <p class="vhint">On your other device, open Knight School, tap ☁️, choose <b>I have a code</b> and enter it. Keep the code private, it's the key to your progress.</p>
+      <p class="vhint">On your other device, open Knight School, tap the cloud button, choose <b>I have a code</b> and enter it. Keep the code private, it's the key to your progress.</p>
       <p class="vhint">Last synced: ${ago(s.at)}${s.error ? ` · <span class="err">Problem: ${esc(s.error)}</span>` : ''}</p>
       <div class="row"><button class="s-now primary">Sync now</button><button class="s-off">Turn off here</button></div>`
     : `
-      <h3>☁️ Sync your progress</h3>
+      <h3>Sync your progress</h3>
       <p class="vhint">Use Knight School on your phone and PC with the same lessons, puzzle rating, reviews and mistakes. Free, no account needed.</p>
       <button class="s-new primary">Turn on sync (first device)</button>
       <details class="s-joinbox"><summary>I have a code from another device</summary>

@@ -9,6 +9,8 @@ import { ALL_LESSONS } from './lessons-data.js';
 import { THEMES, mistakes } from './puzzles.js';
 import { Chess } from '../vendor/chess.js';
 import { toMoveArg } from './chessutil.js';
+import { icon } from './icons.js';
+import { rank } from './belts.js';
 
 const API = 'https://generativelanguage.googleapis.com/v1beta/models';
 // shortcut: Google renames models every few months; aliases first, then pinned names. Update this list if all of them 404.
@@ -37,6 +39,8 @@ function profile() {
   const revs = store.get('reviews', []).slice(0, 8).map(r => store.get('rv.' + r.key, null)).filter(Boolean);
   const elo = revs.map(R => (R.myColor === 'w' ? R.wr : R.br)).find(Boolean);
   L.push(`Username: ${store.get('username', '') || 'not set'} (plays on ${store.get('source', 'chesscom') === 'lichess' ? 'Lichess' : 'chess.com'}).`);
+  const rk = rank();
+  L.push(`Knight School belt: ${rk.belt.name}${rk.next ? `; working toward ${rk.next.name}, still needs: ${rk.stripes.filter(x => !x.ok).map(x => x.label).join(', ')}` : ''}.`);
   L.push(`Game rating: ${elo ?? 'unknown (no games reviewed yet)'}. Puzzle rating on Knight School: ${Math.round(store.get('prating', 800))}.`);
   const pst = store.get('pstats', { solved: 0, failed: 0, byTheme: {} });
   const badThemes = Object.entries(pst.byTheme ?? {}).filter(([, b]) => b.f > b.s).map(([t]) => THEMES[t]?.label ?? t);
@@ -122,10 +126,10 @@ async function checkKey(key) {
 
 // ---- answer formatting: **bold**, bullets, and [lesson:x] style buttons ----
 function actionLink(kind, id) {
-  if (kind === 'lesson' && ALL_LESSONS.some(l => l.id === id)) return [`#/learn/${id}`, `📘 ${ALL_LESSONS.find(l => l.id === id).title}`];
-  if (kind === 'puzzles' && THEMES[id]) return [`#/puzzles?theme=${id}`, `🧩 ${THEMES[id].label} puzzles`];
-  if (kind === 'mistakes') return ['#/puzzles?mode=mistakes', '★ Fix my mistakes'];
-  if (kind === 'review') return ['#/review', '♞ Review my games'];
+  if (kind === 'lesson' && ALL_LESSONS.some(l => l.id === id)) return [`#/learn/${id}`, `${icon('book')} ${esc(ALL_LESSONS.find(l => l.id === id).title)}`];
+  if (kind === 'puzzles' && THEMES[id]) return [`#/puzzles?theme=${id}`, `${icon('puzzle')} ${esc(THEMES[id].label)} puzzles`];
+  if (kind === 'mistakes') return ['#/puzzles?mode=mistakes', `${icon('retry')} Fix my mistakes`];
+  if (kind === 'review') return ['#/review', `${icon('chart')} Review my games`];
   return null;
 }
 const ACTION_RE = /\[(lesson|puzzles|mistakes|review)(?::([\w-]+))?\]/g;
@@ -136,16 +140,28 @@ function format(text) {
   return { html, links, plain: body.replace(/\*\*/g, '').replace(/^\s*[-*] /gm, '') };
 }
 
+// One short personal note a day for the Coach page (one free AI request a day, cached).
+export async function dailyNote() {
+  if (!hasKey()) return null;
+  const day = new Date().toDateString();
+  const c = store.get('aiDaily', null);
+  if (c?.day === day) return format(c.text);
+  const text = await gemini(systemPrompt("The Coach home page. You are writing today's note at the top of it."),
+    [{ r: 'user', t: "Write today's coach note for me: 2 or 3 short sentences. Name one specific thing from my recent games or progress, then the one thing I should focus on today. End with one button." }]);
+  store.set('aiDaily', { day, text });
+  return format(text);
+}
+
 // ---- the chat panel ----
 let openFn = () => {};
 export function openChat(question) { openFn(question); }
 
 export function initChat(button, panel) {
   panel.innerHTML = `
-    <div class="chat-head"><span class="avatar sm">♞</span><b>Coach Knox</b><small class="chat-sub">your AI coach</small><button class="c-close" title="Close" aria-label="Close chat">✕</button></div>
+    <div class="chat-head"><span class="avatar sm"><img src="img/knight.svg" alt=""></span><b>Coach Knox</b><small class="chat-sub">knows your games</small><button class="c-close ib" title="Close" aria-label="Close chat">${icon('close')}</button></div>
     <div class="chat-log" aria-live="polite"></div>
     <div class="chat-chips"></div>
-    <form class="chat-form"><input name="q" placeholder="Ask your coach anything…" autocomplete="off" maxlength="600"><button class="primary">Send</button></form>
+    <form class="chat-form"><input name="q" placeholder="Ask your coach anything…" autocomplete="off" maxlength="600" aria-label="Your question"><button class="primary" aria-label="Send">${icon('send')}</button></form>
     <details class="chat-set"><summary>Coach settings</summary>
       <p class="vhint">The coach uses Google's Gemini AI with your own free key. Your questions and game data are sent to Google to get answers.</p>
       <div class="row"><button class="c-forget">Forget our chats</button><button class="c-nokey">Remove my key</button></div></details>`;
@@ -156,7 +172,7 @@ export function initChat(button, panel) {
   const bubble = (who, html, links = []) => {
     const d = document.createElement('div');
     d.className = 'msg ' + who;
-    d.innerHTML = html + (links.length ? `<div class="msg-links">${links.map(([h, l]) => `<a class="btn" href="${h}">${esc(l)}</a>`).join('')}</div>` : '');
+    d.innerHTML = html + (links.length ? `<div class="msg-links">${links.map(([h, l]) => `<a class="btn" href="${h}">${l}</a>`).join('')}</div>` : '');
     log.append(d);
     log.scrollTop = log.scrollHeight;
     return d;

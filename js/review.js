@@ -6,6 +6,10 @@ import { parseGame, buildReview, terminalEval, CLASSES, BAD } from './analysis.j
 import { Chess } from '../vendor/chess.js';
 import * as store from './store.js';
 import { setPage, openChat, sanLine } from './ai-coach.js';
+import { bumpToday, rank, stripeNews } from './belts.js';
+import { icon, iconPaths } from './icons.js';
+
+const badge = c => `<i class="sym" style="background:${c.color};color:${c.ink}">${c.icon ? icon(c.icon) : c.sym}</i>`;
 
 const DEPTH = 14;
 const MAX_SAVED = 30;
@@ -146,8 +150,11 @@ export async function reviewGame(view, key) {
     evals: evals.map(e => e.lines[0] ? { cp: e.lines[0].cp, mate: e.lines[0].mate } : { cp: 0, mate: null }),
     ...rv,
   };
+  const before = rank();
   saveReview(R);
   renderReview(view, R, true);
+  const news = stripeNews(before);
+  if (news) say(summaryText(R) + news, 'happy');
 }
 
 function saveReview(R) {
@@ -160,6 +167,7 @@ function saveReview(R) {
   list = list.slice(0, MAX_SAVED);
   store.set('reviews', list);
   store.set('rv.' + R.key, R);
+  bumpToday('reviewed', true);
 
   // coach stats
   const tags = {};
@@ -198,19 +206,19 @@ function renderReview(view, R, fresh = false) {
   view.innerHTML = `<div class="play review">
     <div class="boardcol">
       <div class="evalwrap"><div class="evalbar ${flipped ? 'flipped' : ''}"><div class="fill"></div><span class="evtxt"></span></div><div class="board"></div></div>
-      <div class="nav"><button data-n="first">⏮</button><button data-n="prev">◀</button><button data-n="next">▶</button><button data-n="last">⏭</button></div>
+      <div class="nav"><button data-n="first" aria-label="First move">${icon('first')}</button><button data-n="prev" aria-label="Previous move">${icon('prev')}</button><button data-n="next" aria-label="Next move">${icon('next')}</button><button data-n="last" aria-label="Last move">${icon('last')}</button></div>
     </div>
     <aside class="side">
-      <div class="crumb"><a href="#/review">← Games</a></div>
+      <div class="crumb"><a href="#/review">${icon('back')} Games</a></div>
       <div class="players">
         <div><i class="dot w"></i>${esc(R.white)} ${R.wr ? `(${R.wr})` : ''}<b>${Math.round(R.accuracy.w)}%</b></div>
         <div><i class="dot b"></i>${esc(R.black)} ${R.br ? `(${R.br})` : ''}<b>${Math.round(R.accuracy.b)}%</b></div>
       </div>
       <div class="coachslot"></div>
-      <div class="btns"><button class="b-retry">Retry move</button><button class="b-best">Show best</button><button class="b-key primary">Key moments ▶</button><button class="b-ask">💬 Ask coach</button></div>
+      <div class="btns"><button class="b-retry">${icon('retry')} Retry move</button><button class="b-best">${icon('eye')} <span>Show best</span></button><button class="b-key primary">${icon('target')} Key moments</button><button class="b-ask">${icon('chat')} Ask coach</button></div>
       <svg class="graph" viewBox="0 0 ${Math.max(N, 1)} 100" preserveAspectRatio="none"></svg>
       <table class="tally"><tr><th></th><th>${esc(R.white)}</th><th>${esc(R.black)}</th></tr>
-        ${Object.entries(CLASSES).map(([k, c]) => `<tr><td><i class="sym" style="background:${c.color}">${c.sym}</i>${c.label}</td><td>${R.counts.w[k] ?? 0}</td><td>${R.counts.b[k] ?? 0}</td></tr>`).join('')}
+        ${Object.entries(CLASSES).map(([k, c]) => `<tr><td>${badge(c)}${c.label}</td><td>${R.counts.w[k] ?? 0}</td><td>${R.counts.b[k] ?? 0}</td></tr>`).join('')}
       </table>
       <div class="moves"></div>
     </aside></div>`;
@@ -221,7 +229,7 @@ function renderReview(view, R, fresh = false) {
 
   // move list
   $('.moves').innerHTML = R.plies.map((p, i) => `${i % 2 === 0 ? `<span class="num">${i / 2 + 1}.</span>` : ''}
-    <button class="mv" data-i="${i}"><i class="sym" style="background:${CLASSES[p.cls].color}">${CLASSES[p.cls].sym}</i>${esc(p.san)}</button>`).join('');
+    <button class="mv" data-i="${i}">${badge(CLASSES[p.cls])}${esc(p.san)}</button>`).join('');
   $('.moves').onclick = e => { const b = e.target.closest('.mv'); if (b) go(+b.dataset.i); };
 
   // eval graph (white's win chance)
@@ -230,14 +238,16 @@ function renderReview(view, R, fresh = false) {
     <path class="garea" d="M0 100 ${wps.map((w, i) => `L${(i * N) / Math.max(wps.length - 1, 1)} ${100 - w}`).join(' ')} L${N} 100 Z"/>
     <line x1="0" x2="${N}" y1="50" y2="50" class="gmid"/>
     ${R.plies.map((p, i) => ['blunder', 'mistake', 'miss', 'brilliant', 'great'].includes(p.cls)
-      ? `<line x1="${i + 1}" x2="${i + 1}" y1="0" y2="100" stroke="${CLASSES[p.cls].color}" stroke-width="${Math.max(N / 200, 0.25)}" opacity=".9"/>` : '').join('')}
+      ? `<line x1="${i + 1}" x2="${i + 1}" y1="0" y2="100" stroke="${CLASSES[p.cls].mark ?? CLASSES[p.cls].color}" stroke-width="${Math.max(N / 200, 0.25)}" opacity=".9"/>` : '').join('')}
     <line class="gcur" x1="0" x2="0" y1="0" y2="100"/>`;
   $('.graph').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); go(Math.round(((e.clientX - r.left) / r.width) * N) - 1); };
 
   function shapesFor(i) {
     if (i < 0) return [];
     const p = R.plies[i], c = CLASSES[p.cls], m = R.moves[i];
-    const s = [{ orig: m.to, customSvg: { html: `<circle cx="82" cy="18" r="16" fill="${c.color}" stroke="#fff" stroke-width="3"/><text x="82" y="25" font-size="${c.sym.length > 1 ? 16 : 20}" font-weight="700" text-anchor="middle" fill="#fff" font-family="sans-serif">${c.sym}</text>` } }];
+    const s = [{ orig: m.to, customSvg: { html: `<circle cx="82" cy="18" r="16" fill="${c.color}" stroke="#121A3A" stroke-width="2.5"/>${c.icon
+      ? `<g transform="translate(70.5 6.5) scale(.96)" fill="none" stroke="${c.ink}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${iconPaths(c.icon)}</g>`
+      : `<text x="82" y="24.5" font-size="${c.sym.length > 1 ? 16 : 20}" font-weight="800" text-anchor="middle" fill="${c.ink}" font-family="Archivo, sans-serif">${c.sym}</text>`}` } }];
     if (showBest && p.best && p.uci !== p.best && !['book', 'best', 'brilliant', 'great'].includes(p.cls)) s.push(arrow(p.best, 'green'));
     return s;
   }
@@ -288,8 +298,8 @@ function renderReview(view, R, fresh = false) {
     board.load(R.fens[idx], { interactive: true, lastMove: idx > 0 ? [R.moves[idx - 1].from, R.moves[idx - 1].to] : undefined });
     say(`In the game you played ${p.san}. Find something better!`);
   };
-  $('.b-best').onclick = () => { showBest = !showBest; $('.b-best').textContent = showBest ? 'Hide best' : 'Show best'; board.shapes(shapesFor(idx)); };
-  $('.b-best').textContent = 'Hide best';
+  $('.b-best').onclick = () => { showBest = !showBest; $('.b-best span').textContent = showBest ? 'Hide best' : 'Show best'; board.shapes(shapesFor(idx)); };
+  $('.b-best span').textContent = 'Hide best';
   $('.b-key').onclick = () => {
     const key = i => R.plies[i].color === R.myColor && ['blunder', 'mistake', 'miss', 'brilliant', 'great'].includes(R.plies[i].cls);
     for (let k = 1; k <= N; k++) { const j = (idx + k + N) % N; if (key(j)) return go(j); }

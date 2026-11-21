@@ -1,12 +1,13 @@
 // Coach Knox: the speech bubble, the voice (Web Speech API) and synthesized sound effects (Web Audio).
 import * as store from './store.js';
 import { AI_VOICES, ensureVoice, synth } from './voice-ai.js';
+import { icon } from './icons.js';
 
 let box = null;
 let lastText = '';
 export const settings = {
   sound: store.get('sound', true), voice: store.get('voice', true),
-  voiceName: /^(ai|br):/.test(store.get('voiceName', '')) ? store.get('voiceName') : 'ai:' + AI_VOICES[0][0],
+  voiceName: /^(ai|br):/.test(store.get('voiceName', '')) ? store.get('voiceName') : 'ai:en_US-ryan-medium',
   rate: store.get('rate', 1),
 };
 
@@ -16,8 +17,8 @@ const PIECE = { K: 'king', Q: 'queen', R: 'rook', B: 'bishop', N: 'knight' };
 export function coachBox() {
   const el = document.createElement('div');
   el.className = 'coach';
-  el.innerHTML = `<div class="avatar" title="Coach Knox">♞</div>
-    <div class="bubble"><span class="text"></span><small class="vstatus"></small><button class="replay" title="Say it again">🔁</button></div>`;
+  el.innerHTML = `<div class="avatar" title="Coach Knox"><img src="img/knight.svg" alt=""></div>
+    <div class="bubble"><b class="who">Coach Knox</b><span class="text"></span><small class="vstatus"></small><button class="replay" title="Say it again" aria-label="Say it again">${icon('replay')}</button></div>`;
   el.querySelector('.replay').onclick = () => speak(lastText);
   box = el;
   return el;

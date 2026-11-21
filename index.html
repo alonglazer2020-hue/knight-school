@@ -2,9 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1A2550">
   <title>Knight School</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♞</text></svg>">
+  <link rel="icon" href="img/knight.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
   <link rel="stylesheet" href="vendor/chessground.base.css">
   <link rel="stylesheet" href="vendor/chessground.brown.css">
   <link rel="stylesheet" href="vendor/chessground.cburnett.css">
@@ -12,18 +16,14 @@
 </head>
 <body>
   <header class="top">
-    <a class="logo" href="#/coach"><span>♞</span> Knight School</a>
-    <nav>
-      <a href="#/coach" data-tab="coach">Coach</a>
-      <a href="#/learn" data-tab="learn">Learn</a>
-      <a href="#/puzzles" data-tab="puzzles">Puzzles</a>
-      <a href="#/review" data-tab="review">Review</a>
-    </nav>
+    <a class="logo" href="#/coach" aria-label="Knight School home"><img src="img/knight.svg" alt="" width="34" height="34"><span>Knight School</span></a>
+    <nav class="tabs" aria-label="Main"></nav>
+    <a class="beltchip" id="beltChip" href="#/coach" title="Your belt"></a>
     <div class="toggles">
-      <button id="tChat" class="chatbtn" title="Talk to your coach" aria-haspopup="dialog">💬<span> Ask coach</span></button>
-      <button id="tSound" title="Sound effects">🔊</button>
-      <button id="tVoice" title="Coach voice settings" aria-haspopup="true">🗣️</button>
-      <button id="tSync" title="Sync progress between devices" aria-haspopup="true">☁️</button>
+      <button id="tChat" class="chatbtn" title="Talk to your coach" aria-haspopup="dialog"></button>
+      <button id="tSound" class="ib" title="Sound effects" aria-pressed="true"></button>
+      <button id="tVoice" class="ib" title="Coach voice" aria-haspopup="true"></button>
+      <button id="tSync" class="ib" title="Sync between devices" aria-haspopup="true"></button>
     </div>
     <div id="syncPanel" class="vpanel" hidden></div>
     <div id="voicePanel" class="vpanel" hidden>
@@ -31,9 +31,9 @@
       <label class="vrow"><input type="checkbox" class="v-on"> Talk out loud</label>
       <label>Voice<select class="v-name"></select></label>
       <label>Speed<input type="range" class="v-rate" min="0.7" max="1.5" step="0.05"></label>
-      <button class="v-test primary">▶ Test voice</button>
+      <button class="v-test primary">Test voice</button>
       <small class="vstatus"></small>
-      <p class="vhint">AI voices are free and run on your device. Each one downloads about 60 MB the first time you use it, then works offline.</p>
+      <p class="vhint">AI voices are free and run on your device. The first time you pick one it downloads once (60–110 MB), then works offline. Try an HD voice on your PC.</p>
     </div>
   </header>
   <main id="view"></main>
