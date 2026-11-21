@@ -79,7 +79,7 @@ nav.tabs a.active { color: var(--canvas); box-shadow: inset 0 -3px 0 var(--canva
 .ib:hover { background: var(--ink-2); border-color: var(--ink-3); }
 .ib.off { color: #6F7796; }
 .ib.warn { color: var(--amber); border-color: var(--amber); }
-.chatbtn { background: var(--seal); border-color: var(--seal); color: #fff; margin-right: .35rem; padding: .55em .95em; }
+.chatbtn { white-space: nowrap; background: var(--seal); border-color: var(--seal); color: #fff; margin-right: .35rem; padding: .55em .95em; }
 .chatbtn:hover { background: var(--seal-hi); border-color: var(--seal-hi); }
 
 /* settings popovers */
@@ -311,6 +311,8 @@ coords { font-family: var(--font); font-weight: 700; }
 .chat-set .row { gap: .4rem; margin-top: .5rem; }
 
 @media (max-width: 1000px) {
+  .top { gap: .9rem; }
+  .logo span { display: none; }
   .dojo { grid-template-columns: 1fr; }
   .coachcol { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
   .coachcol .coachslot, .coachcol .note { grid-column: 1 / -1; }
