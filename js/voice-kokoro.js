@@ -1,7 +1,5 @@
 // Kokoro: the most natural free voices, a neural TTS model that runs on your device (kokoro-js, Apache-2.0).
 // The model (~90 MB) downloads once from Hugging Face and the browser caches it; the engine loads from jsDelivr.
-const LIB = '../vendor/kokoro/kokoro.web.js';
-const MODEL = 'onnx-community/Kokoro-82M-v1.0-ONNX';
 
 // [id, label] — the best-rated Kokoro English voices.
 export const KOKORO_VOICES = [
@@ -15,29 +13,35 @@ export const KOKORO_VOICES = [
   ['bm_fable', 'Fable · British man'],
 ];
 
-let tts = null;
-// Load the model once; onProgress(0..1) while it downloads.
-export function ensureKokoro(onProgress) {
-  tts ??= (async () => {
-    const { KokoroTTS } = await import(LIB);
-    const files = {};
-    return KokoroTTS.from_pretrained(MODEL, {
-      dtype: 'q8', device: 'wasm',
-      progress_callback: p => {
-        if (p.status !== 'progress' || !p.total) return;
-        files[p.file] = [p.loaded, p.total];
-        const [l, t] = Object.values(files).reduce(([a, b], [x, y]) => [a + x, b + y], [0, 0]);
-        onProgress?.(l / t);
-      },
-    });
-  })().catch(e => { tts = null; throw e; });
-  return tts;
+// The model runs in a Web Worker (kokoro-worker.js) so the page stays clickable while it loads and speaks.
+let worker = null, seq = 0, loading = null, onProgress = null;
+const pending = new Map();
+function call(msg) {
+  if (!worker) {
+    worker = new Worker(new URL('./kokoro-worker.js', import.meta.url), { type: 'module' });
+    worker.onmessage = ({ data }) => {
+      if (data.progress != null) return onProgress?.(data.progress);
+      const p = pending.get(data.id);
+      pending.delete(data.id);
+      if (data.error) p?.reject(new Error(data.error)); else p?.resolve(data.blob);
+    };
+    worker.onerror = e => { // the worker itself broke (e.g. engine failed to load): fail everything, start fresh next time
+      for (const p of pending.values()) p.reject(new Error(e.message || 'Voice worker failed'));
+      pending.clear(); worker.terminate(); worker = null; loading = null;
+    };
+  }
+  return new Promise((resolve, reject) => {
+    const id = ++seq;
+    pending.set(id, { resolve, reject });
+    worker.postMessage({ ...msg, id });
+  });
 }
 
-// One synthesis at a time; returns a WAV blob.
-let queue = Promise.resolve();
-export function synthKokoro(text, voice) {
-  const job = queue.then(async () => (await (await ensureKokoro()).generate(text, { voice })).toBlob());
-  queue = job.catch(() => {});
-  return job;
+// Load the model once; onProgress(0..1) while it downloads.
+export function ensureKokoro(progress) {
+  if (progress) onProgress = progress;
+  return (loading ??= call({}).catch(e => { loading = null; throw e; }));
 }
+
+// Returns a WAV blob; the worker runs one job at a time.
+export const synthKokoro = (text, voice) => call({ text, voice });
