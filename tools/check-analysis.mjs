@@ -4,7 +4,7 @@ import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
-import { parseGame, buildReview, terminalEval } from '../js/analysis.js';
+import { parseGame, buildReview, terminalEval, materialOf, phaseGrades, gameRating, CLASSES } from '../js/analysis.js';
 
 const sf = spawn(process.execPath, [fileURLToPath(new URL('../vendor/stockfish.js', import.meta.url))]);
 let buf = '', waiter = null;
@@ -35,7 +35,7 @@ async function run(pgn, myColor) {
   const g = parseGame(pgn);
   const evals = [];
   for (const f of g.fens) evals.push(terminalEval(f) ?? await analyse(f));
-  return buildReview(g, evals, myColor, openings);
+  return { ...buildReview(g, evals, myColor, openings), fens: g.fens };
 }
 
 // Blackburne Shilling trap: White takes the bait and gets mated.
@@ -61,5 +61,14 @@ console.log(q.cls, q.tag, q.note);
 assert.equal(q.cls, 'blunder');
 assert.equal(q.tag, 'hung');
 
+// Overview numbers: material count, phase grades, game rating.
+assert.deepEqual(materialOf('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'), { diff: 0, pieces: 62 });
+const pg = phaseGrades(r1);
+assert.ok(pg.w.opening === 'book' || CLASSES[pg.w.opening], 'opening graded');
+assert.equal(pg.w.endgame, null, 'a 14-move game has no endgame');
+assert.equal(gameRating(83, 1709), 1940);
+assert.equal(gameRating(80, null), null);
+assert.ok(gameRating(100, 3100) <= 3200 && gameRating(0, 150) >= 100, 'clamped');
+console.log('overview checks passed');
 sf.kill();
 console.log('analysis checks passed');

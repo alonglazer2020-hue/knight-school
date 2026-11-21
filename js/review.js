@@ -2,7 +2,7 @@
 import { Board, arrow, uciOf } from './board.js';
 import { coachBox, say, sfx, hush, prepare } from './coach.js';
 import { analyse, winPct } from './engine.js';
-import { parseGame, buildReview, terminalEval, CLASSES, BAD } from './analysis.js';
+import { parseGame, buildReview, terminalEval, CLASSES, BAD, materialOf, phaseGrades, gameRating, PHASES } from './analysis.js';
 import { Chess } from '../vendor/chess.js';
 import * as store from './store.js';
 import { setPage, openChat, sanLine } from './ai-coach.js';
@@ -234,40 +234,65 @@ function saveReview(R) {
   store.set('mistakes', ms.slice(-200));
 }
 
+// ---- Coach Knox's reactions (picked by move number, so a move always gets the same line and its voice can be prepared) ----
+const REACT = {
+  brilliant: ['WOW.', 'Are you serious? That is brilliant!', 'Now that is a beautiful move.'],
+  great: ['What a find!', 'Great eye!', 'The only move, and you found it!'],
+  best: ['Nice!', 'Clean.', 'Exactly right.'],
+  excellent: ['Good stuff.', 'Solid.'],
+  blunder: ['Oof.', 'Ouch.', 'Oh no.'],
+  mistake: ['Hmm.', 'Not quite.', 'Careful here.'],
+  miss: ['So close!', 'There was something here!'],
+  inaccuracy: ['Slightly off.', 'Close, but not the best.'],
+};
+const THEIRS = {
+  brilliant: ['Wow, your opponent found a brilliant one.'],
+  great: ['Strong move by your opponent.', 'Your opponent found a great move.'],
+  blunder: ['Your opponent just blundered!', 'Big slip from your opponent!'],
+  mistake: ['Your opponent went wrong here.'],
+};
+
 function summaryText(R) {
   const me = R.myColor, c = R.counts[me];
   const acc = Math.round(R.accuracy[me]), oacc = Math.round(R.accuracy[me === 'w' ? 'b' : 'w']);
-  let s = `You played with ${acc}% accuracy, your opponent ${oacc}%.`;
+  const res = R.result === '1/2-1/2' ? 'D' : R.result === (me === 'w' ? '1-0' : '0-1') ? 'W' : R.result === '*' ? '' : 'L';
+  const gr = gameRating(R.accuracy[me], me === 'w' ? R.wr : R.br);
+  let s = { W: 'GG, you won! ', L: "Tough one, but there's a lot to learn here. ", D: 'A draw. ' }[res] ?? '';
+  s += `You played with ${acc}% accuracy, your opponent ${oacc}%.${gr ? ` That's like a ${gr} player today.` : ''}`;
   if (R.opening) s += ` The opening was the ${R.opening.slice(4)}.`;
-  const bl = c.blunder ?? 0, mi = (c.mistake ?? 0) + (c.miss ?? 0), gr = (c.great ?? 0) + (c.brilliant ?? 0);
+  const bl = c.blunder ?? 0, mi = (c.mistake ?? 0) + (c.miss ?? 0), gm = (c.great ?? 0) + (c.brilliant ?? 0);
   if (bl) s += ` You made ${bl} blunder${bl > 1 ? 's' : ''}${mi ? ` and ${mi} mistake${mi > 1 ? 's' : ''}` : ''}.`;
   else if (mi) s += ` No blunders, nice! But ${mi} mistake${mi > 1 ? 's' : ''}.`;
   else s += ' No blunders and no mistakes. Super clean game!';
-  if (gr) s += ` And you found ${gr} great move${gr > 1 ? 's' : ''}!`;
+  if (gm) s += ` And you found ${gm} great move${gm > 1 ? 's' : ''}!`;
   s += bl + mi ? ' Press "Start review" and let\'s learn from them.' : ' Press "Start review" to see the key moves.';
   return s;
 }
 
 function renderReview(view, R, fresh = false) {
   const N = R.plies.length;
+  const nameOf = c => (c === 'w' ? R.white : R.black), ratingOf = c => (c === 'w' ? R.wr : R.br);
+  const grades = phaseGrades(R);
   const flipped = R.myColor === 'b';
   view.innerHTML = `<div class="play review">
     <div class="boardcol">
+      <div class="pbar top"></div>
       <div class="evalwrap"><div class="evalbar ${flipped ? 'flipped' : ''}"><div class="fill"></div><span class="evtxt"></span></div><div class="board"></div></div>
+      <div class="pbar bot"></div>
       <div class="nav"><button data-n="first" aria-label="First move">${icon('first')}</button><button data-n="prev" aria-label="Previous move">${icon('prev')}</button><button data-n="next" aria-label="Next move">${icon('next')}</button><button data-n="last" aria-label="Last move">${icon('last')}</button></div>
     </div>
     <aside class="side">
       <div class="crumb"><a href="#/review">${icon('back')} Games</a></div>
       <div class="coachslot"></div>
       <button class="b-next primary bignext"></button>
-      <div class="btns"><button class="b-retry">${icon('retry')} Retry move</button><button class="b-line">${icon('eye')} <span>Show best line</span></button><button class="b-why">${icon('target')} <span>Show why</span></button><button class="b-ask">${icon('chat')} Ask coach</button></div>
-      <div class="players">
-        <div><i class="dot w"></i>${esc(R.white)} ${R.wr ? `(${R.wr})` : ''}<b>${Math.round(R.accuracy.w)}%</b></div>
-        <div><i class="dot b"></i>${esc(R.black)} ${R.br ? `(${R.br})` : ''}<b>${Math.round(R.accuracy.b)}%</b></div>
-      </div>
+      <div class="btns"><button class="b-punish primary">${icon('target')} Punish it</button><button class="b-retry">${icon('retry')} Retry move</button><button class="b-line">${icon('eye')} <span>Show best line</span></button><button class="b-why">${icon('target')} <span>Show why</span></button><button class="b-ask">${icon('chat')} Ask coach</button></div>
       <svg class="graph" viewBox="0 0 ${Math.max(N, 1)} 100" preserveAspectRatio="none"></svg>
-      <table class="tally"><tr><th></th><th>${esc(R.white)}</th><th>${esc(R.black)}</th></tr>
-        ${Object.entries(CLASSES).map(([k, c]) => `<tr><td>${badge(c)}${c.label}</td><td>${R.counts.w[k] ?? 0}</td><td>${R.counts.b[k] ?? 0}</td></tr>`).join('')}
+      <table class="tally overview">
+        <tr><th></th>${['w', 'b'].map(c => `<th><i class="dot ${c}"></i>${esc(nameOf(c))}<small>${ratingOf(c) ?? ''}</small></th>`).join('')}</tr>
+        <tr class="bigrow"><td>Accuracy</td>${['w', 'b'].map(c => `<td>${Math.round(R.accuracy[c])}</td>`).join('')}</tr>
+        <tr class="bigrow"><td>Game rating</td>${['w', 'b'].map(c => `<td>${gameRating(R.accuracy[c], ratingOf(c)) ?? '–'}</td>`).join('')}</tr>
+        ${PHASES.map(ph => `<tr class="${ph === 'opening' ? 'gap' : ''}"><td>${ph[0].toUpperCase() + ph.slice(1)}</td>${['w', 'b'].map(c => `<td>${grades[c][ph] ? badge(CLASSES[grades[c][ph]]) : '–'}</td>`).join('')}</tr>`).join('')}
+        ${Object.entries(CLASSES).map(([k, c], n) => `<tr class="${n ? '' : 'gap'}"><td>${badge(c)}${c.label}</td><td>${R.counts.w[k] ?? 0}</td><td>${R.counts.b[k] ?? 0}</td></tr>`).join('')}
       </table>
       <div class="moves"></div>
     </aside></div>`;
@@ -309,6 +334,15 @@ function renderReview(view, R, fresh = false) {
     return s;
   }
 
+  // What the coach says at a move: a quick reaction, the explanation, and a challenge after an opponent's blunder.
+  // only when their slip really hands you something: at least 60% winning chances on your reply
+  const canPunish = i => R.plies[i]?.color !== R.myColor && ['blunder', 'mistake'].includes(R.plies[i]?.cls) && R.plies[i + 1]?.best && R.plies[i + 1].wpBefore >= 60;
+  function talkText(i) {
+    if (i < 0) return summaryText(R);
+    const p = R.plies[i], bank = (p.color === R.myColor ? REACT : THEIRS)[p.cls];
+    return `${bank ? bank[i % bank.length] + ' ' : ''}${p.note}${canPunish(i) ? ' Can you punish it?' : ''}`;
+  }
+
   function hasBetter(p) { return p && p.best && p.uci !== p.best && !['book', 'best', 'brilliant', 'great'].includes(p.cls); }
 
   function go(i, speak = true) {
@@ -337,11 +371,18 @@ function renderReview(view, R, fresh = false) {
     $('.b-line span').textContent = 'Show best line';
     $('.b-why').hidden = !(p?.line?.length && (BAD.includes(p.cls) || ['brilliant', 'great'].includes(p.cls)));
     $('.b-why span').textContent = 'Show why';
+    $('.b-punish').hidden = !canPunish(i);
+    view.querySelector('.review').classList.toggle('started', i >= 0);
+    const adv = materialOf(R.fens[i + 1]).diff; // who is up material, shown on their name bar
+    for (const [sel, c] of [['.pbar.top', flipped ? 'w' : 'b'], ['.pbar.bot', flipped ? 'b' : 'w']]) {
+      const up = c === 'w' ? adv : -adv;
+      $(sel).innerHTML = `<i class="dot ${c}"></i><b>${esc(nameOf(c))}</b><span class="m">${ratingOf(c) ?? ''}</span><span class="adv">${up > 0 ? '+' + up : ''}</span>`;
+    }
     $('.b-next').innerHTML = i < 0 ? `Start review ${icon('next')}` : i >= N - 1 ? `${icon('first')} Back to the start` : `Next ${icon('next')}`;
     if (!speak) return;
-    say(i < 0 ? summaryText(R) : p.note, p && BAD.includes(p.cls) ? 'sad' : p && ['brilliant', 'great', 'best'].includes(p.cls) ? 'happy' : '');
+    say(talkText(i), p && BAD.includes(p.cls) && p.color === R.myColor ? 'sad' : p && ['brilliant', 'great', 'best'].includes(p.cls) ? 'happy' : '');
     const k = nextKey();
-    if (k > i) prepare(R.plies[k].note); // the voice for the next stop is ready by the time Next is pressed
+    if (k > i) prepare(talkText(k)); // the voice for the next stop is ready by the time Next is pressed
   }
 
   // Next: play the game forward (animated, with sound) to your next key move, then the coach explains it.
@@ -390,16 +431,21 @@ function renderReview(view, R, fresh = false) {
     }
   }
 
+  let tp = 0; // the move being replayed: your own (Retry) or your answer to their blunder (Punish it)
   async function retryMove(m) {
     if (!retrying) return;
-    const p = R.plies[idx];
+    const p = R.plies[tp], punish = tp !== idx;
     board.setInteractive(false);
-    if (uciOf(m) === p.best) { sfx.correct(); return say(`Yes! ${p.bestSan} is the best move. That's what you missed in the game.`, 'happy'); }
+    if (uciOf(m) === p.best) {
+      sfx.correct();
+      return say(punish ? `Yes! ${p.bestSan} punishes it.${p.uci === p.best ? ' You found it in the game too!' : ` In the game you played ${p.san}.`}`
+        : `Yes! ${p.bestSan} is the best move. That's what you missed in the game.`, 'happy');
+    }
     say('Let me check that...');
     const r = await analyse(board.chess.fen(), { depth: 13 });
     if (!r || !retrying) return;
     const wp = p.color === 'w' ? winPct(r.lines[0]) : 100 - winPct(r.lines[0]);
-    if (wp >= p.wpBefore - 4) { sfx.correct(); return say(`${m.san} works too! Much better than ${p.san}.`, 'happy'); }
+    if (wp >= p.wpBefore - 4) { sfx.correct(); return say(`${m.san} works too!${punish ? '' : ` Much better than ${p.san}.`}`, 'happy'); }
     sfx.wrong();
     say(`${m.san} isn't it either. Try again!`, 'sad');
     setTimeout(() => { board.undo(); board.setInteractive(true); }, 500);
@@ -407,9 +453,15 @@ function renderReview(view, R, fresh = false) {
 
   $('.b-retry').onclick = () => {
     const p = R.plies[idx];
-    run++; retrying = true;
+    run++; retrying = true; tp = idx;
     board.load(R.fens[idx], { interactive: true, lastMove: idx > 0 ? [R.moves[idx - 1].from, R.moves[idx - 1].to] : undefined });
     say(`In the game you played ${p.san}. Find something better!`);
+  };
+  $('.b-punish').onclick = () => {
+    run++; retrying = true; tp = idx + 1;
+    board.load(R.fens[idx + 1], { interactive: true, lastMove: [R.moves[idx].from, R.moves[idx].to] });
+    board.shapes([]);
+    say('Your move. Find the move that punishes it!');
   };
   $('.b-line').onclick = showLine;
   $('.b-why').onclick = showWhy;

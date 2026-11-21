@@ -254,3 +254,40 @@ export function buildReview(game, evals, myColor, openings = {}) {
   for (const p of plies) counts[p.color][p.cls] = (counts[p.color][p.cls] ?? 0) + 1;
   return { plies, accuracy: { w: accOf('w'), b: accOf('b') }, counts, opening };
 }
+
+// ---- Overview numbers, like chess.com's review screen ----
+// White's material minus Black's, and the non-pawn material still on the board (62 at the start).
+export function materialOf(fen) {
+  let diff = 0, pieces = 0;
+  for (const ch of fen.split(' ')[0]) {
+    const v = VAL[ch.toLowerCase()];
+    if (!v) continue; // kings count 0
+    diff += ch === ch.toUpperCase() ? v : -v;
+    if (v > 1) pieces += v;
+  }
+  return { diff, pieces };
+}
+// Opening until the book ends (at least move 10), endgame once 26 or less of non-pawn material is left.
+function phases(R) {
+  const lastBook = R.plies.reduce((k, p, i) => (p.cls === 'book' ? i : k), -1);
+  return R.plies.map((p, i) => (materialOf(R.fens[i + 1]).pieces <= 26 ? 'endgame' : i <= Math.max(lastBook, 19) ? 'opening' : 'middlegame'));
+}
+export const PHASES = ['opening', 'middlegame', 'endgame'];
+const gradeOf = acc => (acc >= 90 ? 'best' : acc >= 80 ? 'excellent' : acc >= 65 ? 'good' : acc >= 50 ? 'inaccuracy' : 'mistake');
+// { w: { opening: 'best' | 'book' | ... | null }, b: {...} } from the average accuracy of each side's moves in each phase.
+export function phaseGrades(R) {
+  const ph = phases(R), out = { w: {}, b: {} };
+  for (const c of ['w', 'b']) for (const name of PHASES) {
+    const ms = R.plies.filter((p, i) => p.color === c && ph[i] === name);
+    out[c][name] = !ms.length ? null : ms.every(p => p.cls === 'book') ? 'book' : gradeOf(ms.reduce((a, p) => a + p.acc, 0) / ms.length);
+  }
+  return out;
+}
+// How well someone played in this game, as an Elo. shortcut: anchored on their real rating, about 40 points per
+// accuracy point above or below what's typical at that rating (chess.com's own model isn't public); refine if one is.
+export function gameRating(acc, rating) {
+  if (!rating) return null;
+  const typical = 55 + rating * 0.013;
+  const r = rating + Math.max(-600, Math.min(600, (acc - typical) * 40));
+  return Math.round(Math.max(100, Math.min(3200, r)) / 10) * 10;
+}
