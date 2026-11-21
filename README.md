@@ -11,7 +11,9 @@ A free chess coach that runs in your browser. Live at https://alonglazer2020-hue
 - **Puzzles:** unlimited free puzzles from Lichess, plus **My mistakes**: positions from your own games, brought back with spaced repetition until you solve them cleanly twice. Hints teach the routine first (checks, captures, threats) before showing the move.
 - **Review:** chess.com- or Lichess-style game review with Stockfish 17. Every move gets a grade and an explanation, and you can retry your mistakes.
 - **Voice:** Coach Knox talks with natural on-device voices (Kokoro), with lighter Piper voices for older phones. Everything runs free in your browser.
-- **Sync:** progress syncs between phone and PC with a private code.
+- **Accounts:** sign in with your chess.com username and a Knight School password; your progress follows you to every device (or sync with a private code, no account).
+- **Looks:** Violet (default), Midnight or Classic, in Settings.
+- **Rating history, bug reports and ideas, installable app** (add to home screen; opens offline).
 
 ## Run it
 Double-click **Start Knight School.bat**, or run `python serve.py` and open http://localhost:8765.
@@ -21,14 +23,17 @@ Double-click **Start Knight School.bat**, or run `python serve.py` and open http
 - `node tools/check-analysis.mjs`: checks the review grading on known games.
 - `node tools/check-levels.mjs`: checks the Elo level maths.
 - `node tools/check-chesscom.mjs [username]`: live check of the chess.com sync against a public account.
+- `node tools/check-auth.mjs`: accounts and account sync against a fake server.
+
+One-time Firebase and Google setup: see SETUP-ACCOUNTS.md.
 
 ## Credits
 - Stockfish.js (GPLv3)
-- chessground (GPLv3); piece set and logo knight (`img/knight.svg`) are cburnett's pieces, CC BY-SA 3.0, Colin M.L. Burnett
+- chessground (GPLv3); piece set and logo knight (`img/knight.svg`) are cburnett's pieces, CC BY-SA 3.0, Colin M.L. Burnett. The app icons and `img/og-image.png` are made from that knight (same licence).
 - chess.js (BSD)
 - Kokoro voices via kokoro-js (Apache-2.0; model Kokoro-82M, Apache-2.0)
 - Piper voices via vits-web (MIT) and onnxruntime-web (MIT)
 - Lucide icons (ISC)
-- Nunito Sans typeface (SIL OFL), via Google Fonts
+- Lexend, Overpass and Nunito Sans typefaces (SIL OFL), via Google Fonts
 - Lichess opening names and puzzle API (CC0)
 - chess.com Published-Data API

@@ -1,6 +1,6 @@
 // Tiny localStorage wrapper; every read/write survives private mode / quota errors.
 // Each synced key also gets a "last changed" timestamp (in ks.__t) so sync.js can merge devices.
-const LOCAL_ONLY = new Set(['sound', 'voice', 'voiceName', 'rate', 'sync', '__t', 'aiKey', 'aiModel', 'beltSeen', 'ccGames', 'ccMonths', 'ccStats', 'ccSync', 'levelSeen', 'auth']); // per-device settings, never synced
+const LOCAL_ONLY = new Set(['sound', 'voice', 'voiceName', 'rate', 'sync', '__t', 'aiKey', 'aiModel', 'beltSeen', 'ccGames', 'ccMonths', 'ccStats', 'ccSync', 'levelSeen', 'auth', 'koReady', 'fbLast', 'guideSeen']); // per-device settings, never synced
 
 function rawGet(k) { try { return localStorage.getItem('ks.' + k); } catch { return null; } }
 function rawSet(k, v) { try { localStorage.setItem('ks.' + k, v); return true; } catch { return false; } }

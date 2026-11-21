@@ -88,6 +88,10 @@ export function settingsView(view, onRemoteChange) {
     </section>
     <section class="card"><div class="syncbox"></div></section>
     <section class="card"><h2>AI coach</h2><div class="aibox"></div></section>
+    <section class="card"><h2>Help and feedback</h2>
+      <div class="row"><a class="btn" href="#/feedback?kind=bug">${icon('bug')} Report a bug</a><a class="btn" href="#/feedback?kind=idea">${icon('bulb')} Suggest an idea</a>${auth.session() ? '<a class="btn" href="#/inbox">Inbox (site owner)</a>' : ''}</div>
+      <p class="hint"><a href="#/privacy">Privacy</a> · <a href="#/terms">Terms</a> · Knight School is not affiliated with Chess.com.</p>
+    </section>
   </div>`;
   const $ = q => view.querySelector(q);
 
@@ -142,7 +146,7 @@ export function settingsView(view, onRemoteChange) {
   fill();
   if ('speechSynthesis' in window) speechSynthesis.addEventListener('voiceschanged', fill, { once: true });
   vOn.checked = settings.voice; vRate.value = settings.rate;
-  const test = () => speak(TEST_LINE);
+  const test = () => speak(TEST_LINE, { force: true }); // pressing Test is consent to download the voice
   vOn.onchange = () => { if (vOn.checked !== settings.voice) toggle('voice'); if (vOn.checked) test(); };
   vSel.onchange = () => { setVoice(vSel.value, +vRate.value); test(); };
   vRate.onchange = () => { setVoice(vSel.value, +vRate.value); test(); };

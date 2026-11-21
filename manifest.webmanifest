@@ -1,0 +1,15 @@
+{
+  "name": "Knight School",
+  "short_name": "Knight School",
+  "description": "A free chess coach that knows your chess.com games: game review, puzzles from your own mistakes, lessons and an AI coach.",
+  "start_url": "./#/coach",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#15151B",
+  "theme_color": "#15151B",
+  "icons": [
+    { "src": "img/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

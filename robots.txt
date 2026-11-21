@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://alonglazer2020-hue.github.io/knight-school/sitemap.xml

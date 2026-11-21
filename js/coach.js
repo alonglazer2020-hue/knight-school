@@ -83,11 +83,16 @@ addEventListener('pointerdown', () => {
 
 function voiceStatus(msg) { document.querySelectorAll('.vstatus').forEach(e => { e.textContent = msg; }); }
 
-export function speak(text) {
+// The natural voice is a ~90 MB download: on mobile data or data saver, wait until the player presses Test voice (force).
+const onMobileData = () => { const c = navigator.connection; return !!c && (c.saveData || c.type === 'cellular'); };
+export function speak(text, { force = false } = {}) {
   if (!settings.voice || !text) return;
   hush();
   const my = ++token;
-  if (settings.voiceName.startsWith('ko:')) speakAI(spoken(text), settings.voiceName.slice(3), my, KOKORO);
+  if (settings.voiceName.startsWith('ko:') && !force && !store.get('koReady', false) && onMobileData()) {
+    voiceStatus('On mobile data the natural voice waits for Wi-Fi (about 90 MB). Press Test voice in Settings to download it now.');
+    speakBrowser(spoken(text));
+  } else if (settings.voiceName.startsWith('ko:')) speakAI(spoken(text), settings.voiceName.slice(3), my, KOKORO);
   else if (settings.voiceName.startsWith('ai:')) speakAI(spoken(text), settings.voiceName.slice(3), my);
   else speakBrowser(spoken(text));
 }
@@ -109,6 +114,7 @@ async function speakAI(text, id, my, eng = PIPER) {
   try {
     await eng.ensure(id, p => voiceStatus(`Downloading the coach's voice… ${Math.round(p * 100)}% (one time only)`));
     voiceStatus('');
+    if (eng === KOKORO) store.set('koReady', true);
     // Speak sentence by sentence, generating the next one while the current one plays.
     const parts = text.match(/[^.!?]+[.!?]*/g)?.map(s => s.trim()).filter(Boolean) ?? [text];
     let next = eng.synth(parts[0], id);

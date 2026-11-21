@@ -6,6 +6,9 @@ import { puzzleView } from './puzzles.js';
 import { reviewIndex, reviewGame } from './review.js';
 import { coachHome } from './home.js';
 import { settingsView } from './settings.js';
+import { feedbackView, inboxView, rememberPage } from './feedback.js';
+import { privacyView, termsView } from './legal.js';
+import { ratingView } from './rating.js';
 import { startAutoSync } from './sync.js';
 import { initChat, setPage } from './ai-coach.js';
 import { icon } from './icons.js';
@@ -27,6 +30,10 @@ addEventListener('ks-look', applyLook);
 const TABS = [['coach', 'Coach', 'home'], ['learn', 'Learn', 'book'], ['puzzles', 'Puzzles', 'puzzle'], ['review', 'Review', 'chart'], ['settings', 'Settings', 'settings']];
 document.querySelector('nav.tabs').innerHTML = TABS.map(([id, label, ic]) => `<a href="#/${id}" data-tab="${id}">${icon(ic)}<span>${label}</span></a>`).join('');
 document.getElementById('tChat').innerHTML = `${icon('chat')}<span>Ask coach</span>`;
+document.querySelector('.bug').innerHTML = `${icon('bug')}<span>Report a bug</span>`;
+
+// Installable app: a service worker keeps the site working offline and lets phones add it to the home screen.
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // Who you are and your level, bottom of the sidebar.
@@ -44,6 +51,7 @@ function route() {
   hush();
   window.onkeydown = null;
   setPage(null); // each page tells the AI coach what's on screen
+  rememberPage(location.hash);
   const [path, query = ''] = location.hash.slice(2).split('?');
   const [tab = 'coach', arg] = path.split('/');
   const params = new URLSearchParams(query);
@@ -55,6 +63,11 @@ function route() {
   else if (tab === 'puzzles') puzzleView(view, params);
   else if (tab === 'review') arg ? reviewGame(view, decodeURIComponent(arg)) : reviewIndex(view);
   else if (tab === 'settings') settingsView(view, onRemoteChange);
+  else if (tab === 'feedback') feedbackView(view, params);
+  else if (tab === 'inbox') inboxView(view);
+  else if (tab === 'privacy') privacyView(view);
+  else if (tab === 'terms') termsView(view);
+  else if (tab === 'rating') ratingView(view, params);
   else coachHome(view);
 }
 initChat(document.getElementById('tChat'), document.getElementById('chatPanel'));

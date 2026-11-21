@@ -74,6 +74,10 @@ export function coachHome(view) {
       ${acc ? `<span class="pill">${icon('check')} Connected to chess.com</span><span class="m synced">${syncing() ? 'Loading your games…' : `Games synced ${ago(lastSync())}`}</span>` : ''}
     </header>
 
+    ${!acc && !store.get('guideSeen', false) ? `<section class="card guide"><div class="card-head"><h2>How Knight School works</h2><button class="link g-close">Got it</button></div>
+      <ol class="steps"><li><b>Sign in with your chess.com username.</b> Your Elo and every game you play come in by themselves.</li>
+      <li><b>Review your games.</b> Stockfish grades every move and Coach Knox explains your mistakes.</li>
+      <li><b>Train what costs you points.</b> Your own mistakes come back as puzzles, plus lessons and puzzles for your level.</li></ol></section>` : ''}
     ${acc ? '' : `<section class="card connect"><div><h2>Sign in with your chess.com username</h2>
       <p class="sub">Make a free Knight School account with your chess.com username and a password. Knight School pulls in your Elo and every game you play, builds your training from them, and your progress follows you to every device.</p>
       <details class="quick"><summary>No account? Just connect your chess.com username</summary><div class="quickslot"></div></details></div><div class="formslot"></div></section>`}
@@ -81,7 +85,7 @@ export function coachHome(view) {
     <section class="card ratings">
       <div class="main-rating">
         <span class="lbl">${lv.label}${acc ? '' : ' · Knight School'}</span>
-        <div class="big"><b>${lv.rating}</b>${d != null ? `<span class="delta ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d > 0 ? '+' : d < 0 ? '−' : '±'}${Math.abs(d)} this month</span>` : ''}</div>
+        <div class="big"><a class="elo" href="#/rating" title="See your rating history"><b>${lv.rating}</b></a>${d != null ? `<span class="delta ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d > 0 ? '+' : d < 0 ? '−' : '±'}${Math.abs(d)} this month</span>` : ''}</div>
         ${spark(history(lv.tc).slice(-30))}${history(lv.tc).length > 1 ? `<div class="spark-cap"><span>${Math.min(history(lv.tc).length, 30)} games ago</span><span>Last game</span></div>` : ''}
       </div>
       <div class="side-ratings">
@@ -117,6 +121,7 @@ export function coachHome(view) {
   const $ = q => view.querySelector(q);
   $('.coachslot').append(coachBox());
   $('.b-talk').onclick = () => openChat();
+  $('.g-close')?.addEventListener('click', () => { store.set('guideSeen', true); $('.guide').remove(); });
   const reroute = () => dispatchEvent(new HashChangeEvent('hashchange')); // redraw sidebar and page
   if (!acc) { $('.formslot').append(accountForm(reroute)); $('.quickslot').append(signInForm(reroute)); }
   const err = m => { $('.plan-err').textContent = m; };
