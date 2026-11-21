@@ -11,6 +11,12 @@
         ],
         "createdAt": "2026-11-20T21:54:46.376Z",
         "reason": "Claude triage: only radial-gradients are in vendored chessground.brown.css (move-destination dots and red check glow on the king's square) - functional board UI, not a decorative page halo; same finding suppressed earlier under the Downloads-relative path"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "consolas",
+        "createdAt": "2026-11-21T09:08:37.701Z",
+        "reason": "assistant triage: monospace only for the sync code display and code-entry field, data the player types character by character, not a UI type role"
       }
     ]
   }
