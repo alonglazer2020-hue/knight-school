@@ -12,6 +12,18 @@ import { icon } from './icons.js';
 import { account, refresh as refreshChesscom, lastSync } from './chesscom.js';
 import { level } from './levels.js';
 
+import * as store from './store.js';
+
+// The look (Settings > Look): violet by default; it follows your account like the rest of your progress.
+export const LOOKS = { violet: '#15151B', midnight: '#0E1B3D', classic: '#1F1E1C' };
+export function applyLook() {
+  const look = LOOKS[store.get('theme', 'violet')] ? store.get('theme', 'violet') : 'violet';
+  document.documentElement.dataset.theme = look;
+  document.querySelector('meta[name=theme-color]').content = LOOKS[look];
+}
+applyLook();
+addEventListener('ks-look', applyLook);
+
 const TABS = [['coach', 'Coach', 'home'], ['learn', 'Learn', 'book'], ['puzzles', 'Puzzles', 'puzzle'], ['review', 'Review', 'chart'], ['settings', 'Settings', 'settings']];
 document.querySelector('nav.tabs').innerHTML = TABS.map(([id, label, ic]) => `<a href="#/${id}" data-tab="${id}">${icon(ic)}<span>${label}</span></a>`).join('');
 document.getElementById('tChat').innerHTML = `${icon('chat')}<span>Ask coach</span>`;
@@ -51,6 +63,7 @@ route();
 
 // New data from another device or from chess.com: redraw only overview pages, never a lesson or puzzle in progress.
 function onRemoteChange() {
+  applyLook();
   paintMe();
   const [path] = location.hash.slice(2).split('?');
   const [tab = 'coach', arg] = path.split('/');

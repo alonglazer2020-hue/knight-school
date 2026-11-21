@@ -383,6 +383,39 @@ coords { font-family: var(--font); font-weight: 800; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 
+/* ---- Looks (Settings > Look). Classic green is the :root default above. ---- */
+/* Theme: Midnight (midnight-blue enamel, porcelain buttons, signage type) */
+html[data-theme=midnight] {
+  --bg: #0E1B3D; --rail: #0A1531; --card: #16264F; --raise: #1F3263; --raise-hi: #2A3F77; --line: #263868;
+  --text: #F5F2EA; --text-2: #CDD2E0; --text-3: #9EA8C6;
+  --green: #F5F2EA; --green-hi: #FFFFFF; --green-edge: transparent; --green-ink: #0E1B3D;
+  --win: #2BA84A; --loss: #E63B2E; --loss-text: #FF8F86; --draw: #9EA8C6; --amber: #F2A900;
+  --font: "Overpass", system-ui, sans-serif;
+}
+html[data-theme=midnight] .pill { background: rgba(43, 168, 74, .16); color: #7FD69A; }
+html[data-theme=midnight] .bar i, html[data-theme=midnight] .spark .line { background: #2BA84A; stroke: #2BA84A; }
+html[data-theme=midnight] .spark .area { fill: rgba(43, 168, 74, .14); }
+html[data-theme=midnight] .delta.up, html[data-theme=midnight] .askbtn, html[data-theme=midnight] button.link { color: #6FD08A; }
+html[data-theme=midnight] .res.W { color: #fff; }
+html[data-theme=midnight] .logo img, html[data-theme=midnight] .avatar { background: #F5F2EA; border-radius: 50%; }
+html[data-theme=midnight] cg-board { background-color: #E4E7EE; background-image: conic-gradient(#7D8FB4 90deg, #E4E7EE 90deg 180deg, #7D8FB4 180deg 270deg, #E4E7EE 270deg); }
+html[data-theme=midnight] cg-board square.last-move { background-color: rgba(242, 169, 0, .42); }
+
+/* Theme: Violet, the default (graphite ground, one violet accent, rounder type) */
+html[data-theme=violet] {
+  --bg: #15151B; --rail: #101015; --card: #1F1F28; --raise: #2A2A35; --raise-hi: #353544; --line: #2E2E3B;
+  --text: #F4F3FA; --text-2: #C6C4D6; --text-3: #9C99B0;
+  --green: #9B87F5; --green-hi: #B1A2FA; --green-edge: #6A55D6; --green-ink: #120B2E;
+  --win: #4FC48A; --loss: #E5484D; --loss-text: #FF8D8F; --draw: #9C99B0; --amber: #F5B83D;
+  --font: "Lexend", system-ui, sans-serif;
+}
+html[data-theme=violet] .pill { background: rgba(155, 135, 245, .16); color: #C4B8FF; }
+html[data-theme=violet] .spark .area { fill: rgba(155, 135, 245, .14); }
+html[data-theme=violet] .res.W { color: #0B2A1A; }
+html[data-theme=violet] .logo img, html[data-theme=violet] .avatar { background: #F4F3FA; border-radius: 10px; }
+html[data-theme=violet] cg-board { background-color: #EFEDF7; background-image: conic-gradient(#8C7CC4 90deg, #EFEDF7 90deg 180deg, #8C7CC4 180deg 270deg, #EFEDF7 270deg); }
+html[data-theme=violet] cg-board square.last-move { background-color: rgba(245, 184, 61, .45); }
+
 /* account form */
 .acctform { display: flex; flex-direction: column; gap: .35rem; max-width: 420px; }
 .acctform .seg { margin-bottom: .5rem; }
@@ -390,3 +423,16 @@ coords { font-family: var(--font); font-weight: 800; }
 .acctform > .primary { margin-top: .6rem; align-self: flex-start; }
 .connect .quick { margin-top: .4rem; }
 .connect .quick .signin { margin-top: .6rem; }
+
+/* Settings > Look picker: each option shows its own three colours */
+.looks { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: .6rem; }
+.look { position: relative; display: flex; flex-direction: column; gap: .15rem; padding: .8rem .9rem; border-radius: 8px; background: var(--bg); border: 2px solid var(--line); cursor: pointer; }
+.look:has(input:checked) { border-color: var(--green); }
+.look:has(input:focus-visible) { outline: 2px solid var(--green-hi); outline-offset: 2px; }
+.look input { position: absolute; opacity: 0; pointer-events: none; }
+.look small { color: var(--text-3); font-size: .8rem; }
+.sw { display: flex; gap: 4px; margin-bottom: .35rem; }
+.sw i { width: 22px; height: 22px; border-radius: 5px; border: 1px solid rgba(255, 255, 255, .15); }
+.look-violet .sw i:nth-child(1) { background: #15151B; } .look-violet .sw i:nth-child(2) { background: #1F1F28; } .look-violet .sw i:nth-child(3) { background: #9B87F5; }
+.look-midnight .sw i:nth-child(1) { background: #0E1B3D; } .look-midnight .sw i:nth-child(2) { background: #16264F; } .look-midnight .sw i:nth-child(3) { background: #F5F2EA; }
+.look-classic .sw i:nth-child(1) { background: #262421; } .look-classic .sw i:nth-child(2) { background: #312E2B; } .look-classic .sw i:nth-child(3) { background: #81B64C; }

@@ -70,6 +70,12 @@ export function settingsView(view, onRemoteChange) {
   const acc = account(), s = stats();
   view.innerHTML = `<div class="page settings"><h1>Settings</h1>
     <section class="card" id="set-account"></section>
+    <section class="card"><h2>Look</h2>
+      <div class="looks" role="radiogroup" aria-label="Look">
+        ${[['violet', 'Violet', 'Dark graphite with violet'], ['midnight', 'Midnight', 'Midnight blue with white'], ['classic', 'Classic', 'Warm slate with green']].map(([id, name, d]) =>
+          `<label class="look look-${id}"><input type="radio" name="look" value="${id}"><span class="sw"><i></i><i></i><i></i></span><b>${name}</b><small>${d}</small></label>`).join('')}
+      </div>
+    </section>
     <section class="card"><h2>Coach voice</h2>
       <label class="switch"><input type="checkbox" class="v-on"> Coach Knox talks out loud</label>
       <label class="field">Voice<select class="v-name"></select></label>
@@ -141,6 +147,13 @@ export function settingsView(view, onRemoteChange) {
   vSel.onchange = () => { setVoice(vSel.value, +vRate.value); test(); };
   vRate.onchange = () => { setVoice(vSel.value, +vRate.value); test(); };
   $('.v-test').onclick = test;
+
+  // look
+  const cur = store.get('theme', 'violet');
+  view.querySelectorAll('input[name=look]').forEach(r => {
+    r.checked = r.value === cur;
+    r.onchange = () => { store.set('theme', r.value); dispatchEvent(new CustomEvent('ks-look')); };
+  });
 
   // sounds
   $('.s-on').checked = settings.sound;

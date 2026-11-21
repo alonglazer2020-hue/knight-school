@@ -257,3 +257,13 @@ Under the ratings tiles: "Next goal: 1800" with points-to-go on the right, a 10p
 - **Don't** invent rank systems, belts or decorative worlds; ratings are the player's real chess.com Elo.
 - **Don't** add shadows beyond the primary key edge and the floating chat panel.
 - **Don't** use green, red or grey for anything that is not an action or a win, loss or draw.
+
+## Looks (Settings > Look)
+
+The layout, spacing and components above are shared. Three looks change only colour, type face, board squares and the primary-button treatment; each is a set of custom-property overrides on `html[data-theme=…]` in `style.css`, and the choice syncs with the player's progress.
+
+- **Violet (default):** ground #15151B, card #1F1F28, primary #9B87F5 with ink #120B2E and edge #6A55D6, board #8C7CC4 / #EFEDF7, type **Lexend**. Chosen by the owner as the default so the site reads as its own, not as chess.com.
+- **Midnight:** ground #0E1B3D, card #16264F, primary porcelain #F5F2EA with midnight ink and no bottom edge, progress and wins in route green #2BA84A, board #7D8FB4 / #E4E7EE, type **Overpass**.
+- **Classic:** the warm slate and green described above, type **Nunito Sans**.
+
+Rule: a look never changes layout, spacing or controls, only the tokens.
