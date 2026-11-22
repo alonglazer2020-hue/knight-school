@@ -32,7 +32,7 @@ export function ratingView(view, params) {
     <div class="seg tcs">${tcs.map(t => `<a class="${t === tc ? 'active' : ''}" href="#/rating?tc=${t}">${cap(t)}</a>`).join('')}</div>
     <section class="card"><div class="rstats">
       <div><span class="lbl">Now</span><b>${s.r ?? h.at(-1)?.r ?? '–'}</b></div>
-      <div><span class="lbl">Best</span><b>${s.best ?? '–'}</b></div>
+      <div><span class="lbl">All-time best</span><b>${s.best ?? '–'}</b></div>
       <div><span class="lbl">Record</span><b>${s.w ?? 0}<small>W</small> ${s.l ?? 0}<small>L</small> ${s.d ?? 0}<small>D</small></b></div>
       <div><span class="lbl">Win rate</span><b>${n ? Math.round((100 * (s.w ?? 0)) / n) + '%' : '–'}</b></div>
     </div>${chart(h)}<p class="m">${h.length} ${cap(tc).toLowerCase()} games loaded${games().length >= 5000 ? ' (newest 5000 games across all time controls)' : ''}.</p></section></div>`;

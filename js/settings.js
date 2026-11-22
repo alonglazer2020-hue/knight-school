@@ -38,7 +38,7 @@ export function accountForm(onDone) {
   const paint = () => {
     const up = mode === 'up';
     f.innerHTML = `<div class="seg"><button type="button" data-m="up" class="${up ? 'active' : ''}">Create account</button><button type="button" data-m="in" class="${up ? '' : 'active'}">Sign in</button></div>
-      <label for="kU">chess.com username</label><input id="kU" name="u" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      <label for="kU">chess.com username</label><input id="kU" name="u" value="${(account()?.username ?? '').replace(/[^\w-]/g, '')}" autocomplete="username" autocapitalize="none" spellcheck="false" required>
       <label for="kP">${up ? 'Pick a password for Knight School' : 'Knight School password'}</label><input id="kP" name="p" type="password" autocomplete="${up ? 'new-password' : 'current-password'}" minlength="6" required>
       ${up ? '<label for="kP2">Type the password again</label><input id="kP2" name="p2" type="password" autocomplete="new-password" minlength="6" required>' : ''}
       <button class="primary">${up ? 'Create account' : 'Sign in'}</button>

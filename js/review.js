@@ -77,13 +77,15 @@ export async function reviewLatest() {
 // Rows for synced chess.com games (Coach page and Review page share them).
 const RES = { W: 'Won', L: 'Lost', D: 'Draw' };
 const ctlText = c => { const [base, inc] = String(c ?? '').split('+'); return base.includes('/') ? 'Daily' : `${Math.round(+base / 60) || base}${inc ? '|' + inc : ''}`; };
+// "Nov 22", or "Feb 13, 2025" for an earlier year
+const dateOf = t => new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric', ...(new Date(t).getFullYear() !== new Date().getFullYear() && { year: 'numeric' }) });
 export function gameRows(list) {
   const all = ccGames();
   return list.map(g => {
     const prev = all.find(x => x.tc === g.tc && x.t < g.t), d = prev && g.me ? g.me - prev.me : null;
     const rv = store.get('rv.' + g.key, null);
     return `<li class="grow"><span class="res ${g.res}" title="${RES[g.res]}">${g.res}</span>
-      <span class="who"><b>${esc(g.opp)}</b> <small>(${g.oppR ?? '?'})</small><small class="open">${esc(g.open || g.tc)}</small></span>
+      <span class="who"><b>${esc(g.opp)}</b> <small>(${g.oppR ?? '?'})</small><small class="open">${dateOf(g.t)} · ${esc(g.open || g.tc)}</small></span>
       <span class="tc">${g.tc === 'daily' ? 'Daily' : `${g.tc[0].toUpperCase() + g.tc.slice(1)} ${ctlText(g.ctl)}`}</span>
       <span class="delta ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d == null ? '' : d > 0 ? '+' + d : d < 0 ? '−' + -d : '±0'}</span>
       <span class="acc" title="${rv ? 'Your accuracy' : 'Not reviewed yet'}">${rv ? Math.round(rv.accuracy[rv.myColor]) + '%' : ''}</span>
@@ -101,16 +103,20 @@ export function reviewIndex(view) {
   if (account()) return reviewMine(view);
   reviewImport(view);
 }
-function reviewMine(view) {
-  const list = ccGames().slice(0, 30), saved = store.get('reviews', []);
+function reviewMine(view, tc = 'all') {
+  const all = ccGames(), saved = store.get('reviews', []);
+  const tcs = ['rapid', 'blitz', 'bullet', 'daily'].filter(t => all.some(g => g.tc === t));
+  const list = all.filter(g => tc === 'all' || g.tc === tc).slice(0, 30);
   view.innerHTML = `<div class="page"><h1>Game Review</h1>
     <p class="sub">Your newest chess.com games. Pick one: Stockfish 17 grades every move, Coach Knox explains your mistakes, and they become puzzles.</p>
     <section class="card"><div class="card-head"><h2>Your games</h2><span class="m">${account().username} · chess.com</span></div>
+      ${tcs.length > 1 ? `<div class="seg tcs">${['all', ...tcs].map(t => `<button type="button" data-tc="${t}" class="${t === tc ? 'active' : ''}">${t === 'all' ? 'All' : t[0].toUpperCase() + t.slice(1)}</button>`).join('')}</div>` : ''}
       ${list.length ? `<ol class="gamelist">${gameRows(list)}</ol>` : '<p class="sub">No games yet. Play one on chess.com, then come back.</p>'}<p class="err" role="status"></p></section>
     <details class="card"><summary>Review a game from somewhere else (Lichess or a PGN)</summary><div class="importbox"></div></details>
     ${saved.length ? `<h2>Past reviews</h2><div class="games">${saved.map(x => `<a class="game" href="#/review/${encodeURIComponent(x.key)}"><span>${esc(x.title)}</span><span class="m">${x.acc != null ? Math.round(x.acc) + '% accuracy' : ''}</span></a>`).join('')}</div>` : ''}
   </div>`;
   bindGameRows(view, m => { view.querySelector('.err').textContent = m; });
+  view.querySelectorAll('[data-tc]').forEach(b => b.onclick = () => reviewMine(view, b.dataset.tc));
   reviewImport(view.querySelector('.importbox'), true);
 }
 function reviewImport(view, embedded = false) {

@@ -14,7 +14,13 @@ const get = async url => {
 
 export const account = () => store.get('chesscom', null);          // { username, avatar, name, joined, url }
 export const stats = () => store.get('ccStats', null);             // { rapid, blitz, bullet, daily: {r, best, w, l, d}, puzzles }
-export const games = () => store.get('ccGames', []);               // newest first, see compact() below
+let gRaw = null, gVal = [];
+export function games() { // newest first, see compact() below; parsed again only when the stored list changed
+  let raw = null;
+  try { raw = localStorage.getItem('ks.ccGames'); } catch { /* storage blocked */ }
+  if (raw !== gRaw) { gRaw = raw; gVal = store.get('ccGames', []); }
+  return gVal;
+}
 export const lastSync = () => store.get('ccSync', 0);
 
 export async function signIn(username) {
