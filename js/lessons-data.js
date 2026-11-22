@@ -111,6 +111,57 @@ export const COURSES = [
     ],
   },
   {
+    id: 'club', title: 'Club Player Skills', icon: '♖', lessons: [
+      {
+        id: 'remove-defender', title: 'Remove the defender', steps: [
+          { fen: '5rk1/pp3ppp/5n2/6B1/8/3Q4/PP3PPP/1B4K1 w - - 0 1', arrows: ['d3h7'], circles: ['f6'], say: "Your queen and bishop aim at h7, but the knight on f6 guards it. When one piece does an important job, attack THAT piece. This is called removing the defender." },
+          { fen: '5rk1/pp3ppp/5n2/6B1/8/3Q4/PP3PPP/1B4K1 w - - 0 1', say: 'Remove the defender!', answer: ['Bxf6'], ok: "If Black takes back with gxf6, Qxh7 is checkmate. If not, you're simply a piece up.", hint: 'Which white piece can take the knight on f6?' },
+        ],
+      },
+      {
+        id: 'back-rank', title: 'Back-rank weakness', steps: [
+          { fen: '6k1/5ppp/8/8/8/7P/5PP1/6K1 w - - 0 1', circles: ['h2'], say: "A king behind three unmoved pawns has no escape square. One rook or queen on the back rank can be checkmate. Strong players give the king air with a move like h3, called luft, once things calm down." },
+          { fen: '3r2k1/5ppp/8/8/1Q6/8/5PPP/3R2K1 b - - 0 1', say: "You're Black. White's king has no air, and White's rook is defended only once. Find the winning blow!", answer: ['Rxd1+'], ok: 'After Rxd1+ White can only block with Qe1, and Rxe1 is checkmate. Always check the back rank, yours and theirs.', hint: 'Capture on d1 with check.' },
+        ],
+      },
+      {
+        id: 'opposition', title: 'King opposition', steps: [
+          { fen: '8/4k3/8/4K3/4P3/8/8/8 b - - 0 1', arrows: ['e5e7'], say: 'When two kings face each other with one square between them, that is the OPPOSITION. The side that must move has to step aside. Here Black is to move, so the black king must give way and White wins.' },
+          { fen: '4k3/8/8/4K3/4P3/8/8/8 w - - 0 1', say: 'Golden rule: a king on the 6th rank in front of its pawn always wins. Get there!', answer: ['Kd6', 'Ke6', 'Kf6'], ok: 'Your king leads the way and the pawn will queen. Kings are fighters in the endgame.', hint: 'Step up to the 6th rank, next to or in front of the e-file.' },
+        ],
+      },
+      {
+        id: 'breakthrough', title: 'Pawn breakthrough', steps: [
+          { fen: '8/ppp3k1/8/PPP5/8/8/8/K7 w - - 0 1', say: "Three pawns against three, and both kings far away. It looks equal, but one pawn sacrifice breaks through and makes a new queen. It's a famous trick." },
+          { fen: '8/ppp3k1/8/PPP5/8/8/8/K7 w - - 0 1', say: 'Find the breakthrough!', answer: ['b6'], ok: 'If axb6, then c6! And if cxb6, then a6! Either way one of your pawns runs through to queen before the black king arrives.', hint: 'Push the middle pawn.' },
+        ],
+      },
+      {
+        id: 'smothered-combo', title: 'The smothered mate combo', steps: [
+          { fen: '3r3k/6pp/1q6/6N1/2Q5/8/5PPP/6K1 w - - 0 1', say: "Black's king is boxed in by its own pawns. A famous combination wins by force: check, double check, a queen sacrifice, then a knight mate. Calculate it! First move?", answer: ['Nf7+'], ok: 'Check! The king must go back to g8.', hint: 'Start with a knight check.' },
+          { fen: '3r2k1/5Npp/1q6/8/2Q5/8/5PPP/6K1 w - - 2 2', say: 'Now a double check: the knight moves and uncovers your queen on the same diagonal.', answer: ['Nh6+'], ok: 'Double check! Only the king can move, back to h8.', hint: 'The knight jumps where it also gives check, letting the queen check too.' },
+          { fen: '3r3k/6pp/1q5N/8/2Q5/8/5PPP/6K1 w - - 4 3', say: 'Now the brave part. Give up your queen with check!', answer: ['Qg8+'], ok: "Black must take with the rook, because the king can't: your knight guards g8.", hint: 'Put the queen right next to the king, where the knight protects her.' },
+          { fen: '6rk/6pp/1q5N/8/8/8/5PPP/6K1 w - - 0 4', say: 'Finish it!', answer: 'mate', ok: "Smothered mate! This combination is called Philidor's Legacy. Calculating 4 moves ahead like this is how strong players win.", hint: 'Your knight goes back to f7.' },
+        ],
+      },
+      {
+        id: 'rook-endgames', title: 'Rook endgames: Philidor & Lucena', steps: [
+          { fen: '3k4/8/r7/3PK3/8/8/8/7R b - - 0 1', arrows: ['a6h6'], say: "Rook endgames are the most common endgames. Defending: keep your rook on your 3rd rank (the 6th here) so the enemy king can't come forward. If the pawn advances, check the king from behind. That's the PHILIDOR position, and it's a draw." },
+          { fen: '1K1k4/1P6/8/8/8/8/r7/2R5 w - - 0 1', say: "Attacking: your pawn is on the 7th, but your king is stuck in front of it and the black rook checks from the side. That's the LUCENA position. The winning trick is to build a bridge with your rook." },
+          { fen: '1K1k4/1P6/8/8/8/8/r7/2R5 w - - 0 1', side: 'w', say: 'Play the winning plan: push the black king away with a check, put your rook on the 4th rank, then walk your king out. When the checks run out, the rook blocks.', line: [['Rd1+', 'Push the black king one file further away.'], ['Ke7', 'The king steps aside.'], ['Rd4', 'The bridge! The rook waits on the 4th rank.'], ['Ra1', 'Black gets ready to check.'], ['Kc7', 'Out comes your king.'], ['Rc1+', 'Check.'], ['Kb6', 'Keep walking toward the rook.'], ['Rb1+', 'Check.'], ['Kc6', 'Step aside.'], ['Rc1+', 'Check again.'], ['Kb5', 'Toward your bridge.'], ['Rb1+', 'Last check.'], ['Rb4', 'The bridge blocks the checks, and the pawn will queen.']] },
+        ],
+      },
+      {
+        id: 'structures', title: 'Pawn structures & plans', steps: [
+          { fen: 'r1bq1rk1/pp2bppp/2n1pn2/8/3P4/2NB1N2/PP3PPP/R1BQ1RK1 w - - 0 1', circles: ['d4'], say: "Strong players think in plans, and plans come from the pawns. Here White has an ISOLATED queen's pawn on d4: no pawn on c or e can protect it. It gives White space and attacking chances, but it can become a weakness in the endgame." },
+          { fen: 'r1bq1rk1/pp2bppp/2n1pn2/8/3P4/2NB1N2/PP3PPP/R1BQ1RK1 w - - 0 1', arrows: ['f1e1', 'd1e2', 'f3e5'], say: 'With the isolated pawn: attack! Put your pieces on active squares and use e5 for a knight. Against it: trade pieces, block the square in front of it (d5), and win it in the endgame.' },
+          { fen: '6k1/5ppp/8/1P6/8/8/5PPP/6K1 w - - 0 1', arrows: ['b5b8'], say: 'A PASSED pawn has no enemy pawn in front of it or on the next files. Passed pawns must be pushed: in the endgame it ties down the enemy king while your king eats the other pawns.' },
+          { fen: 'r1bq1rk1/pp2bppp/2n1pn2/3p4/3P4/2NBPN2/PP3PPP/R2QKB1R w - - 0 1', arrows: ['b2b4', 'b4b5'], say: "When you have fewer pawns on one side, push them anyway: the MINORITY ATTACK. b4 and b5 here will leave Black with a weak pawn on c6 or d5 to attack. The rule: find the weak pawn or square, then aim all your pieces at it." },
+        ],
+      },
+    ],
+  },
+  {
     id: 'openings', title: 'Opening Courses', icon: '📖', lessons: [
       opening('italian', 'Italian Game (White)', 'w',
         'The Italian Game is perfect for beginners: fast development, quick castling, and pressure on f7. It starts with e4, Nf3 and Bc4.',

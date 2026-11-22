@@ -10,8 +10,8 @@ export const BANDS = [
   { max: 800, name: 'Beginner', focus: 'Stop hanging pieces, start spotting forks', lessons: ['principles', 'scholar-defense', 'fork'], themes: ['hangingPiece', 'fork'] },
   { max: 1000, name: 'Improving', focus: 'Pins, discovered attacks and mating patterns', lessons: ['pin', 'discovered', 'mates'], themes: ['pin', 'discoveredAttack', 'mateIn2'] },
   { max: 1200, name: 'Club player', focus: 'Basic endgames and one opening for each colour', lessons: ['endgame', 'italian', 'london', 'caro-kann', 'slav'], themes: ['endgame', 'backRankMate'] },
-  { max: 1500, name: 'Strong club player', focus: 'Calculation and clean, blunder-free games', lessons: ['queens-gambit'], themes: ['sacrifice', 'skewer', 'trappedPiece'] },
-  { max: Infinity, name: 'Advanced', focus: 'Deep calculation and long-term plans', lessons: [], themes: ['sacrifice', 'mix'] },
+  { max: 1500, name: 'Strong club player', focus: 'Calculation and clean, blunder-free games', lessons: ['remove-defender', 'back-rank', 'opposition', 'breakthrough', 'queens-gambit'], themes: ['sacrifice', 'skewer', 'trappedPiece'] },
+  { max: Infinity, name: 'Advanced', focus: 'Deep calculation and long-term plans', lessons: ['smothered-combo', 'rook-endgames', 'structures'], themes: ['sacrifice', 'mix'] },
 ];
 const TC = { rapid: 'Rapid', blitz: 'Blitz', bullet: 'Bullet', daily: 'Daily', puzzles: 'Puzzle' };
 

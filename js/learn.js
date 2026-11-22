@@ -28,7 +28,8 @@ export function learnIndex(view) {
   const lv = level();
   view.innerHTML = `<div class="page learn"><h1>Learn</h1>
     <p class="sub">${done.size} of ${ALL_LESSONS.length} lessons done. Lessons are grouped by rating: start with the ones for your Elo (${lv.rating}). Each one is interactive and Coach Knox talks you through it.</p>
-    ${BANDS.map((b, bi) => {
+    ${[lv.band, ...BANDS.filter(b => b !== lv.band)].map(b => { // your level first, then the rest in order
+      const bi = BANDS.indexOf(b);
       const ids = b.lessons.filter(id => ALL_LESSONS.some(l => l.id === id));
       if (!ids.length) return '';
       const n = ids.filter(id => done.has(id)).length;
