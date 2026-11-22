@@ -1,5 +1,5 @@
 // Privacy and terms, in plain words. Keep these true: update them whenever the site starts storing or sending something new.
-const UPDATED = 'November 21, 2026';
+const UPDATED = 'November 22, 2026';
 const page = (title, body) => `<div class="page legal"><h1>${title}</h1><p class="m">Last updated ${UPDATED}</p>${body}
   <p class="sub">Questions? <a href="#/feedback?kind=other">Send us a message</a>.</p></div>`;
 
@@ -32,5 +32,5 @@ export function termsView(view) {
     <h2>Not affiliated</h2>
     <p>Knight School is not made by, connected to or endorsed by Chess.com, Lichess or Google. Their names belong to their owners and are only used to describe what the site connects to.</p>
     <h2>Open source</h2>
-    <p>The site is built with open-source software, including Stockfish and chessground (GPL). Its source code is public at <a href="https://github.com/alonglazer2020-hue/knight-school" target="_blank" rel="noopener">GitHub</a>.</p>`);
+    <p>The site is built with open-source software, including Stockfish and chessground (GPL), and piece sounds from Lichess (AGPL). Its source code is public at <a href="https://github.com/alonglazer2020-hue/knight-school" target="_blank" rel="noopener">GitHub</a>.</p>`);
 }

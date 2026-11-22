@@ -29,6 +29,7 @@ One-time Firebase and Google setup: see SETUP-ACCOUNTS.md.
 
 ## Credits
 - Stockfish.js (GPLv3)
+- Piece move and capture sounds (`snd/move.mp3`, `snd/capture.mp3`): Lichess "standard" sound set, from github.com/lichess-org/lila, AGPLv3+.
 - chessground (GPLv3); piece set and logo knight (`img/knight.svg`) are cburnett's pieces, CC BY-SA 3.0, Colin M.L. Burnett. The app icons and `img/og-image.png` are made from that knight (same licence).
 - chess.js (BSD)
 - Kokoro voices via kokoro-js (Apache-2.0; model Kokoro-82M, Apache-2.0)

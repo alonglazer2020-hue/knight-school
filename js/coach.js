@@ -201,7 +201,7 @@ export function hush() {
 // ---- Sound effects, synthesized so there are no audio files to license ----
 let ac = null;
 function ctx() {
-  ac ??= new (window.AudioContext || window.webkitAudioContext)();
+  if (!ac) { ac = new (window.AudioContext || window.webkitAudioContext)(); loadSamples(); }
   if (ac.state === 'suspended') ac.resume();
   return ac;
 }
@@ -228,13 +228,27 @@ function tone(freq, t0, dur, type = 'sine', gain = 0.18) {
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + 0.02);
 }
+// Recorded wooden piece sounds (Lichess "standard" set, AGPLv3, see README); the synthesized knock until they load.
+const SAMPLES = { move: 'snd/move.mp3', capture: 'snd/capture.mp3' }, buffers = {};
+function loadSamples() {
+  for (const [k, url] of Object.entries(SAMPLES)) if (!buffers[k])
+    buffers[k] = fetch(url).then(r => r.arrayBuffer()).then(b => ctx().decodeAudioData(b)).then(a => (buffers[k] = a)).catch(() => delete buffers[k]);
+}
+function sample(k, t0 = 0) { // true if the recording played
+  const b = buffers[k];
+  if (!(b instanceof AudioBuffer)) return false;
+  const a = ctx(), s = a.createBufferSource();
+  s.buffer = b; s.connect(a.destination); s.start(a.currentTime + t0);
+  return true;
+}
+const move = (t0 = 0) => sample('move', t0) || knock(t0, 0.45);
 const fx = {
-  move: () => knock(0, 0.45),
-  capture: () => { knock(0, 0.6, 1200); knock(0.045, 0.5, 2200); },
-  castle: () => { knock(0, 0.45); knock(0.11, 0.45); },
-  check: () => { knock(0, 0.5); tone(988, 0.02, 0.18, 'triangle', 0.12); },
-  promote: () => { knock(0, 0.45); tone(784, 0.03, 0.12); tone(1175, 0.1, 0.18); },
-  end: () => { knock(0, 0.5); [523, 659, 784].forEach((f, i) => tone(f, 0.05 + i * 0.02, 0.6, 'triangle', 0.1)); },
+  move: () => move(),
+  capture: () => sample('capture') || (knock(0, 0.6, 1200), knock(0.045, 0.5, 2200)),
+  castle: () => { move(); move(0.11); },
+  check: () => { move(); tone(988, 0.02, 0.18, 'triangle', 0.12); },
+  promote: () => { move(); tone(784, 0.03, 0.12); tone(1175, 0.1, 0.18); },
+  end: () => { move(); [523, 659, 784].forEach((f, i) => tone(f, 0.05 + i * 0.02, 0.6, 'triangle', 0.1)); },
   correct: () => [659, 880, 1319].forEach((f, i) => tone(f, i * 0.07, 0.22)),
   wrong: () => { tone(220, 0, 0.16, 'square', 0.07); tone(165, 0.13, 0.22, 'square', 0.07); },
   win: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.1, 0.35, 'triangle', 0.14)),
