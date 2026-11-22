@@ -79,7 +79,7 @@ export function puzzleView(view, params) {
     $('.filters').hidden = mode !== 'lichess';
     $('.mcount').textContent = `(${mistakes().length})`;
     const st = store.get('pstats', { solved: 0, failed: 0, streak: 0 });
-    $('.rating').innerHTML = mode === 'lichess' ? `Puzzle rating <b>${puzzleRating()}</b>` : 'Positions where you went wrong in your own games';
+    $('.rating').innerHTML = mode === 'lichess' ? `Puzzle rating <b>${Math.round(puzzleRating())}</b>` : 'Positions where you went wrong in your own games';
     // Your level carried into the work: Elo, next goal, and what this rating band should train.
     const lv = level();
     $('.rankline').innerHTML = `<span>${lv.label} <b>${lv.rating}</b> · next goal ${lv.goal}</span><span class="m">Train: ${lv.band.focus.toLowerCase()}</span>`;
