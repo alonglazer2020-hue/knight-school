@@ -6,7 +6,7 @@ import { speak, hush, lastSaid } from './coach.js';
 import { weaknesses } from './home.js';
 import { doneSet } from './learn.js';
 import { ALL_LESSONS } from './lessons-data.js';
-import { THEMES, mistakes } from './puzzles.js';
+import { THEMES, mistakes, puzzleRating } from './puzzles.js';
 import { Chess } from '../vendor/chess.js';
 import { toMoveArg } from './chessutil.js';
 import { icon } from './icons.js';
@@ -48,7 +48,7 @@ function profile() {
   } else {
     L.push(`Not signed in with chess.com. Game rating seen in reviews: ${elo ?? 'unknown'}.`);
   }
-  L.push(`Puzzle rating on Knight School: ${Math.round(store.get('prating', 800))}.`);
+  L.push(`Puzzle rating on Knight School: ${Math.round(puzzleRating())}.`);
   const pst = store.get('pstats', { solved: 0, failed: 0, byTheme: {} });
   const badThemes = Object.entries(pst.byTheme ?? {}).filter(([, b]) => b.f > b.s).map(([t]) => THEMES[t]?.label ?? t);
   L.push(`Puzzles: ${pst.solved} solved, ${pst.failed} failed${badThemes.length ? `; struggles with: ${badThemes.join(', ')}` : ''}.`);

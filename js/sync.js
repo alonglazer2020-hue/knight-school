@@ -3,6 +3,7 @@
 // Security rules only allow access to a code's items if you know the code (no listing of codes).
 import * as store from './store.js';
 import { idToken, session } from './auth.js';
+import { mergeToday } from './levels.js';
 
 export const API_KEY = 'AIzaSyCdx8IKGnnyDfqfjZzvNxXYiYu1kPPody8'; // public web key by design; access is limited by Firestore rules
 const PROJECT = 'knight-school-6bddd';
@@ -61,6 +62,7 @@ const UNION = {
   done: (a, b) => [...new Set([...a, ...b])],
   games: byKey(50),
   reviews: byKey(30),
+  today: mergeToday,
 };
 
 // Where progress lives: your account when signed in, else the shared sync code (null = not syncing).

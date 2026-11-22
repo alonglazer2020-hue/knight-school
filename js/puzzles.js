@@ -7,6 +7,7 @@ import * as store from './store.js';
 import { setPage, sanLine } from './ai-coach.js';
 import { bumpToday, level, levelNews } from './levels.js';
 import { icon } from './icons.js';
+import { stats, mainTc } from './chesscom.js';
 
 export const THEMES = {
   mix: { label: 'Mixed', tip: 'Look at every check, capture and threat.' },
@@ -25,6 +26,10 @@ export const THEMES = {
   sacrifice: { label: 'Sacrifices', tip: 'Giving up material can lead to something bigger.' },
 };
 const DIFFS = ['easiest', 'easier', 'normal', 'harder', 'hardest'];
+// Your puzzle rating; until your first puzzle it starts from your chess.com rating instead of 800.
+export const puzzleRating = () => store.get('prating', null) ?? Math.round(stats()?.[mainTc()]?.r ?? 800);
+// Lichess serves anonymous puzzles around 1500, about 300 points per difficulty step.
+const diffFor = r => DIFFS[Math.max(0, Math.min(4, Math.round((r - 1500) / 300) + 2))];
 const SOLVED = ['Got it!', 'Brilliant!', 'Nailed it!', 'Yes! Great vision.', 'Perfect!'];
 const pick = a => a[Math.floor(Math.random() * a.length)];
 
@@ -46,7 +51,7 @@ async function fetchLichess(theme, diff) {
 
 export function puzzleView(view, params) {
   let theme = params.get('theme') || store.get('ptheme', 'mix');
-  let diff = store.get('pdiff', 'easier');
+  let diff = store.get('pdiff', null) ?? diffFor(puzzleRating());
   let mode = params.get('mode') === 'mistakes' ? 'mistakes' : 'lichess';
   let p = null, k = 0, failed = false, hintLevel = 0, prefetch = null, busy = false;
 
@@ -74,7 +79,7 @@ export function puzzleView(view, params) {
     $('.filters').hidden = mode !== 'lichess';
     $('.mcount').textContent = `(${mistakes().length})`;
     const st = store.get('pstats', { solved: 0, failed: 0, streak: 0 });
-    $('.rating').innerHTML = mode === 'lichess' ? `Puzzle rating <b>${Math.round(store.get('prating', 800))}</b>` : 'Positions where you went wrong in your own games';
+    $('.rating').innerHTML = mode === 'lichess' ? `Puzzle rating <b>${puzzleRating()}</b>` : 'Positions where you went wrong in your own games';
     // Your level carried into the work: Elo, next goal, and what this rating band should train.
     const lv = level();
     $('.rankline').innerHTML = `<span>${lv.label} <b>${lv.rating}</b> · next goal ${lv.goal}</span><span class="m">Train: ${lv.band.focus.toLowerCase()}</span>`;
@@ -145,7 +150,7 @@ Solution: ${sanLine(p.fen, p.solution, 12)}. Do NOT reveal the solution moves un
     }
     store.set('pstats', st);
     if (p.rating && !p.mistake) {
-      const r = store.get('prating', 800), e = 1 / (1 + 10 ** ((p.rating - r) / 400));
+      const r = puzzleRating(), e = 1 / (1 + 10 ** ((p.rating - r) / 400));
       store.set('prating', Math.max(100, r + 24 * ((clean ? 1 : 0) - e)));
     }
     paint();

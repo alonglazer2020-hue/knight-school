@@ -2,7 +2,7 @@
 import { coachBox, say, sfx } from './coach.js';
 import { nextLesson, doneSet } from './learn.js';
 import { ALL_LESSONS } from './lessons-data.js';
-import { THEMES, mistakes } from './puzzles.js';
+import { THEMES, mistakes, puzzleRating } from './puzzles.js';
 import { gameRows, bindGameRows, reviewChesscom } from './review.js';
 import * as store from './store.js';
 import { openChat, dailyNote } from './ai-coach.js';
@@ -93,7 +93,7 @@ export function coachHome(view) {
       </div>
       <div class="side-ratings">
         ${others.length ? `<div class="tiles">${others.map(x => `<div class="tile"><span class="lbl">${cap(x)}</span><b>${st[x].r}</b><small>best ${st[x].best ?? '–'}</small></div>`).join('')}
-          <div class="tile"><span class="lbl">Puzzle rating</span><b>${Math.round(store.get('prating', 800))}</b><small>on Knight School</small></div></div>` : ''}
+          <div class="tile"><span class="lbl">Puzzle rating</span><b>${Math.round(puzzleRating())}</b><small>on Knight School</small></div></div>` : ''}
         <div class="goal">
           <div class="goal-head"><span>Next goal: <b>${lv.goal}</b></span><span class="m">${lv.toGo} to go</span></div>
           <div class="bar" role="progressbar" aria-label="Progress to ${lv.goal}" aria-valuemin="${lv.prev}" aria-valuemax="${lv.goal}" aria-valuenow="${lv.rating}"><i style="width:${lv.pct}%"></i></div>

@@ -1,7 +1,7 @@
 // Checks the Elo level maths with fake data: node tools/check-levels.mjs
 const mem = new Map();
 globalThis.localStorage = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, String(v)), removeItem: k => mem.delete(k), key: i => [...mem.keys()][i], get length() { return mem.size; } };
-const { level, levelNews, today, bumpToday } = await import('../js/levels.js');
+const { level, levelNews, today, bumpToday, mergeToday } = await import('../js/levels.js');
 const set = (k, v) => localStorage.setItem('ks.' + k, JSON.stringify(v));
 const assert = (c, m) => { if (!c) { console.error('FAIL', m); process.exit(1); } };
 
@@ -21,4 +21,16 @@ assert(levelNews() === '', 'announced once');
 set('mainTc', 'blitz'); set('ccStats', { rapid: { r: 805 }, blitz: { r: 615 } });
 assert(level().tc === 'blitz' && level().rating === 615, 'main rating follows the Settings choice');
 bumpToday('solved'); assert(today().solved === 1, 'daily counter');
+// Two devices on the same day add up instead of overwriting each other.
+const get = k => JSON.parse(localStorage.getItem('ks.' + k));
+set('today', null); set('dev', 'phone'); for (let i = 0; i < 6; i++) bumpToday('solved');
+const phone = get('today');
+set('today', null); set('dev', 'pc'); for (let i = 0; i < 5; i++) bumpToday('solved'); bumpToday('lesson', true);
+set('today', mergeToday(get('today'), phone));
+assert(today().solved === 11 && today().lesson === true, 'phone 6 + PC 5 puzzles = 11, lesson done on one counts');
+set('today', mergeToday(get('today'), phone));
+assert(today().solved === 11, 'merging again does not double count');
+set('today', { d: new Date().toDateString(), solved: 3, reviewed: true });
+assert(today().solved === 3 && today().reviewed, 'a day saved in the old format still counts');
+assert(mergeToday({ d: 'Sat Nov 21 2026', per: {} }, { d: 'Sun Nov 22 2026', per: {} }).d === 'Sun Nov 22 2026', 'newer day wins');
 console.log('level checks passed');
